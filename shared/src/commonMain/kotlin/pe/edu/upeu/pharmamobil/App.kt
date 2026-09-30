@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LocalPharmacy
 import androidx.compose.material.icons.filled.Medication
@@ -55,6 +56,7 @@ import pe.edu.upeu.pharmamobil.presentation.cliente.ClienteScreen
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
 import pe.edu.upeu.pharmamobil.presentation.inicio.InicioScreen
 import pe.edu.upeu.pharmamobil.presentation.producto.ProductoScreen
+import pe.edu.upeu.pharmamobil.presentation.productos.ProductosScreen
 import pe.edu.upeu.pharmamobil.theme.PharmaMobilTheme
 
 /** Una sola fuente para el menu lateral y el titulo de la barra superior. */
@@ -67,6 +69,7 @@ private data class Destino(
 private val DESTINOS = listOf(
     Destino(Screen.Inicio, "Inicio", Icons.Default.Home),
     Destino(Screen.Productos, "Productos", Icons.Default.Medication),
+    Destino(Screen.Catalogo, "Catálogo API", Icons.Default.Cloud),
     Destino(Screen.Clientes, "Clientes", Icons.Default.Person),
     Destino(Screen.Pedidos, "Pedidos", Icons.Default.ShoppingCart)
 )
@@ -219,6 +222,9 @@ fun App() = KoinContext {
                             ProductoScreen(
                                 viewModel = koinViewModel()
                             )
+
+                        Screen.Catalogo ->
+                            ProductosScreen()
 
                         Screen.Clientes ->
                             ClienteScreen(

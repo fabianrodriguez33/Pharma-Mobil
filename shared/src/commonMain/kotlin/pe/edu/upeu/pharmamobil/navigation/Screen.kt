@@ -5,6 +5,8 @@ sealed class Screen {
 
     data object Productos : Screen()
 
+    data object Catalogo : Screen()
+
     data object Clientes : Screen()
 
     data object Pedidos : Screen()

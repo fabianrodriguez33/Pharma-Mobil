@@ -44,6 +44,7 @@ fun initKoin(configuracionAdicional: KoinApplication.() -> Unit = {}) {
             dataModule,
             domainModule,
             presentationModule,
+            networkModule,
             platformModule
         )
     }
