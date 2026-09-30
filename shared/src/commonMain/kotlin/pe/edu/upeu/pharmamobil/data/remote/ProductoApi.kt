@@ -9,6 +9,7 @@ import pe.edu.upeu.pharmamobil.data.remote.dto.ProductoDto
 class ProductoApi(private val client: HttpClient) {
     suspend fun obtenerProductos(limite: Int = 10): List<ProductoDto> {
         return client.get("products") {
+            parameter("offset", 0)
             parameter("limit", limite)
         }.body()
     }
