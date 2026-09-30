@@ -1,0 +1,2 @@
+09-30 20:56:13.224  4779  4779 I System.out: HttpClient: REQUEST: https://api.escuelajs.co/api/v1/products?limit=10
+09-30 20:56:14.808  4779  4779 I System.out: HttpClient: RESPONSE: 200 

@@ -26,6 +26,26 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 - Android tests: `./gradlew :shared:testAndroidHostTest`
 - iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
 
+### Cliente Ktor y consumo GET (Guia 07)
+
+- **URL base:** `https://api.escuelajs.co/api/v1/` (Platzi Fake Store API)
+- **Endpoint consumido:** `GET /products?limit=10` (completo: `https://api.escuelajs.co/api/v1/products?limit=10`)
+- **Motores:** OkHttp en Android, Darwin en iOS (se inyectan con Koin en `platformModule`).
+- **Pantalla:** menu lateral > "Catalogo API" (`ProductosScreen`), con estados Loading, Success y Error con boton "Reintentar".
+
+Campos del DTO (`ProductoDto`, `data/remote/dto`):
+
+| Campo JSON | Propiedad Kotlin | Tipo | Notas |
+|---|---|---|---|
+| `id` | `id` | `Int` | |
+| `title` | `title` | `String` | |
+| `price` | `price` | `Double` | |
+| `description` | `description` | `String` | por defecto `""` |
+| `images` | `images` | `List<String>` | por defecto lista vacia |
+| `category` | `categoria` | `CategoriaDto?` (`id: Int`, `name: String`) | opcional |
+
+El mapper (`ProductoDto.toDomain()`) convierte el DTO al modelo de dominio `Producto` (`id`, `nombre`, `precio`, `stock`); el dominio no tiene anotaciones de serializacion.
+
 ---
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…

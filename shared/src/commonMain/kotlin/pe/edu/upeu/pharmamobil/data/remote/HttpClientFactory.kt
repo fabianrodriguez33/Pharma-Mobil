@@ -5,7 +5,6 @@ import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.DefaultRequest
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
@@ -26,7 +25,7 @@ fun crearHttpClient(engine: HttpClientEngine): HttpClient {
         }
 
         install(Logging) {
-            logger = Logger.DEFAULT
+            logger = ConsolaLogger
             level = LogLevel.HEADERS
         }
 
@@ -40,5 +39,12 @@ fun crearHttpClient(engine: HttpClientEngine): HttpClient {
             url("https://api.escuelajs.co/api/v1/")
             header(HttpHeaders.ContentType, "application/json")
         }
+    }
+}
+
+/** SLF4J no imprime en Android/iOS; println llega a Logcat y a la consola de Xcode. */
+private object ConsolaLogger : Logger {
+    override fun log(message: String) {
+        println("HttpClient: $message")
     }
 }
