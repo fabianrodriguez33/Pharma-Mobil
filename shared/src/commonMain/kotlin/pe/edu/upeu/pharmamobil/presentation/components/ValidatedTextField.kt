@@ -2,6 +2,7 @@ package pe.edu.upeu.pharmamobil.presentation.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +34,7 @@ fun ValidatedTextField(
         },
         isError = error != null,
         singleLine = true,
+        shape = MaterialTheme.shapes.small,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         leadingIcon = leadingIcon?.let {
             {

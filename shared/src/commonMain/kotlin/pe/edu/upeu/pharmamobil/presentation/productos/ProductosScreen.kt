@@ -1,23 +1,23 @@
 package pe.edu.upeu.pharmamobil.presentation.productos
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import coil3.compose.AsyncImage
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
@@ -26,11 +26,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
+import kotlin.math.round
 
 @Composable
 fun ProductosScreen(
@@ -53,12 +58,7 @@ fun ProductosScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(items = e.productos, key = { it.id }) { ProductoRemotoItem(it) }
-                    }
+                    CatalogoGrid(e.productos)
                 }
 
             is ProductosUiState.Error ->
@@ -79,29 +79,76 @@ fun ProductosScreen(
 }
 
 @Composable
-private fun ProductoRemotoItem(producto: Producto) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            AsyncImage(
-                model = producto.imagen.ifBlank { null },
-                contentDescription = producto.nombre,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(RoundedCornerShape(8.dp))
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = producto.nombre, style = MaterialTheme.typography.titleSmall)
+private fun CatalogoGrid(productos: List<Producto>) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 160.dp),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Column(modifier = Modifier.padding(bottom = 4.dp)) {
                 Text(
-                    text = "S/ ${producto.precio}",
-                    style = MaterialTheme.typography.bodySmall,
+                    text = "Nuestro catálogo",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "${productos.size} productos disponibles",
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
+        items(items = productos, key = { it.id }) { ProductoCard(it) }
     }
+}
+
+@Composable
+private fun ProductoCard(producto: Producto) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        AsyncImage(
+            model = producto.imagen.ifBlank { null },
+            contentDescription = producto.nombre,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        )
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = producto.nombre,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                minLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = "S/ ${formatoPrecio(producto.precio)}",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
+}
+
+/** Dos decimales fijos sin depender de String.format (no existe en common). */
+private fun formatoPrecio(precio: Double): String {
+    val centimos = round(precio * 100).toLong()
+    val decimales = (centimos % 100).toString().padStart(2, '0')
+    return "${centimos / 100}.$decimales"
 }
