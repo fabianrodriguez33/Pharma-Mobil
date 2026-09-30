@@ -3,6 +3,12 @@ package pe.edu.upeu.pharmamobil.presentation.productos
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -75,13 +81,27 @@ fun ProductosScreen(
 @Composable
 private fun ProductoRemotoItem(producto: Producto) {
     Card(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(text = producto.nombre, style = MaterialTheme.typography.titleSmall)
-            Text(
-                text = "S/ ${producto.precio}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+        Row(
+            modifier = Modifier.padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            AsyncImage(
+                model = producto.imagen.ifBlank { null },
+                contentDescription = producto.nombre,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(8.dp))
             )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = producto.nombre, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    text = "S/ ${producto.precio}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }

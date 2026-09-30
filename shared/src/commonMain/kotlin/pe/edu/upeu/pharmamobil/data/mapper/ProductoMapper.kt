@@ -5,14 +5,15 @@ import pe.edu.upeu.pharmamobil.domain.model.Producto
 
 /**
  * El dominio actual solo conoce id, nombre, precio y stock. La API no expone
- * stock, asi que se inicia en 0; descripcion, imagen y categoria no se mapean
+ * stock, asi que se inicia en 0; descripcion y categoria no se mapean
  * para no tocar el modelo de dominio.
  */
 fun ProductoDto.toDomain(): Producto = Producto(
     id = id.toLong(),
     nombre = title.ifBlank { "Sin nombre" },
     precio = price,
-    stock = 0
+    stock = 0,
+    imagen = images.firstOrNull().orEmpty()
 )
 
 /** Descarta los productos que violarian los invariantes del dominio (p. ej. precio 0). */
