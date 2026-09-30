@@ -29,7 +29,7 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 ### Cliente Ktor y consumo GET (Guia 07)
 
 - **URL base:** `https://api.escuelajs.co/api/v1/` (Platzi Fake Store API)
-- **Endpoint consumido:** `GET /products?limit=10` (completo: `https://api.escuelajs.co/api/v1/products?limit=10`)
+- **Endpoint consumido:** `GET /products?offset=0&limit=10` (completo: `https://api.escuelajs.co/api/v1/products?offset=0&limit=10`)
 - **Motores:** OkHttp en Android, Darwin en iOS (se inyectan con Koin en `platformModule`).
 - **Pantalla:** menu lateral > "Catalogo API" (`ProductosScreen`), con estados Loading, Success y Error con boton "Reintentar".
 
