@@ -8,6 +8,10 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import pe.edu.upeu.pharmamobil.data.repository.FakeProductoRepository
 import pe.edu.upeu.pharmamobil.domain.model.Producto
+import pe.edu.upeu.pharmamobil.domain.error.ErrorApi
+import pe.edu.upeu.pharmamobil.domain.error.ErrorApiException
+import pe.edu.upeu.pharmamobil.domain.usecase.ActualizarProductoUseCase
+import pe.edu.upeu.pharmamobil.domain.usecase.EliminarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
 import kotlin.test.AfterTest
@@ -39,7 +43,9 @@ class ProductoViewModelTest {
         repositorio: FakeProductoRepository = FakeProductoRepository()
     ) = ProductoViewModel(
         registrarProducto = RegistrarProductoUseCase(repositorio),
-        listarProductos = ListarProductosUseCase(repositorio)
+        listarProductos = ListarProductosUseCase(repositorio),
+        actualizarProducto = ActualizarProductoUseCase(repositorio),
+        eliminarProducto = EliminarProductoUseCase(repositorio)
     )
 
     @Test
@@ -90,7 +96,7 @@ class ProductoViewModelTest {
         viewModel.onNombreChange("")
         viewModel.onPrecioChange("abc")
         viewModel.onStockChange("-1")
-        viewModel.registrar()
+        viewModel.guardar()
 
         val estado = viewModel.uiState.value
 
@@ -109,7 +115,7 @@ class ProductoViewModelTest {
         viewModel.onNombreChange("Paracetamol")
         viewModel.onPrecioChange("12.50")
         viewModel.onStockChange("5")
-        viewModel.registrar()
+        viewModel.guardar()
 
         val estado = viewModel.uiState.value
         val fase = assertIs<ProductoUiState.Fase.ConProductos>(estado.fase)
@@ -122,5 +128,88 @@ class ProductoViewModelTest {
             "Producto \"Paracetamol\" registrado correctamente",
             estado.mensajeExito
         )
+    }
+
+    @Test
+    fun editarPrecargaElFormularioYGuardarActualizaElProducto() = runTest {
+
+        val repositorio = FakeProductoRepository(
+            mutableListOf(Producto(id = 1L, nombre = "Paracetamol", precio = 12.5, stock = 5))
+        )
+        val viewModel = nuevoViewModel(repositorio)
+        val original = assertIs<ProductoUiState.Fase.ConProductos>(
+            viewModel.uiState.value.fase
+        ).productos.single()
+
+        viewModel.editar(original)
+        assertEquals(1L, viewModel.uiState.value.formulario.id)
+        assertEquals("12.5", viewModel.uiState.value.formulario.precio)
+
+        viewModel.onNombreChange("Ibuprofeno")
+        viewModel.guardar()
+
+        val estado = viewModel.uiState.value
+        val fase = assertIs<ProductoUiState.Fase.ConProductos>(estado.fase)
+
+        assertEquals("Ibuprofeno", fase.productos.single().nombre)
+        assertEquals(0L, estado.formulario.id)
+        assertEquals(ProductoUiState.Operacion.Inactiva, estado.operacion)
+    }
+
+    @Test
+    fun eliminarQuitaElProductoDelInventario() = runTest {
+
+        val repositorio = FakeProductoRepository(
+            mutableListOf(Producto(id = 1L, nombre = "Paracetamol", precio = 12.5, stock = 5))
+        )
+        val viewModel = nuevoViewModel(repositorio)
+
+        viewModel.eliminar(1L)
+
+        assertEquals(ProductoUiState.Fase.SinProductos, viewModel.uiState.value.fase)
+        assertEquals("Producto eliminado correctamente", viewModel.uiState.value.mensajeExito)
+    }
+
+    @Test
+    fun elErrorDeValidacionDelServidorCaeBajoCadaCampo() = runTest {
+
+        val repositorio = FakeProductoRepository().apply {
+            fallaAlRegistrar = ErrorApiException(
+                ErrorApi.Validacion(mapOf("nombre" to "El nombre debe tener entre 3 y 150 caracteres"))
+            )
+        }
+        val viewModel = nuevoViewModel(repositorio)
+
+        viewModel.onNombreChange("Ab")
+        viewModel.onPrecioChange("1")
+        viewModel.onStockChange("1")
+        viewModel.guardar()
+
+        val estado = viewModel.uiState.value
+
+        assertEquals("El nombre debe tener entre 3 y 150 caracteres", estado.formulario.nombreError)
+        assertEquals(ProductoUiState.Operacion.Inactiva, estado.operacion)
+    }
+
+    @Test
+    fun unFalloDeRedQuedaComoOperacionFallidaSinTocarLaFase() = runTest {
+
+        val repositorio = FakeProductoRepository().apply {
+            fallaAlRegistrar = ErrorApiException(ErrorApi.SinConexion)
+        }
+        val viewModel = nuevoViewModel(repositorio)
+
+        viewModel.onNombreChange("Paracetamol")
+        viewModel.onPrecioChange("1")
+        viewModel.onStockChange("1")
+        viewModel.guardar()
+
+        val estado = viewModel.uiState.value
+
+        assertEquals(
+            ProductoUiState.Operacion.Fallida("Sin conexión con el servidor"),
+            estado.operacion
+        )
+        assertEquals(ProductoUiState.Fase.SinProductos, estado.fase)
     }
 }

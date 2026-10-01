@@ -9,4 +9,11 @@ interface ProductoRepository {
 
     /** Entrega el inventario completo en el orden en que fue registrado. */
     suspend fun listar(): List<Producto>
+
+    suspend fun obtenerPorId(id: Long): Producto
+
+    /** Reemplaza los datos del producto con el mismo id y devuelve el resultado. */
+    suspend fun actualizar(producto: Producto): Producto
+
+    suspend fun eliminar(id: Long)
 }

@@ -3,6 +3,8 @@ package pe.edu.upeu.pharmamobil.data.repository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import pe.edu.upeu.pharmamobil.domain.error.ErrorApi
+import pe.edu.upeu.pharmamobil.domain.error.ErrorApiException
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
 
@@ -36,6 +38,28 @@ class ProductoRepositorioEnMemoria : ProductoRepository {
         delay(RETARDO_LISTADO_MS)
         return candado.withLock {
             productos.toList()
+        }
+    }
+
+    override suspend fun obtenerPorId(id: Long): Producto = candado.withLock {
+        productos.firstOrNull { it.id == id }
+            ?: throw ErrorApiException(ErrorApi.NoEncontrado)
+    }
+
+    override suspend fun actualizar(producto: Producto): Producto {
+        delay(RETARDO_REGISTRO_MS)
+        return candado.withLock {
+            val indice = productos.indexOfFirst { it.id == producto.id }
+            if (indice < 0) throw ErrorApiException(ErrorApi.NoEncontrado)
+            productos[indice] = producto
+            producto
+        }
+    }
+
+    override suspend fun eliminar(id: Long) {
+        delay(RETARDO_REGISTRO_MS)
+        candado.withLock {
+            if (!productos.removeAll { it.id == id }) throw ErrorApiException(ErrorApi.NoEncontrado)
         }
     }
 

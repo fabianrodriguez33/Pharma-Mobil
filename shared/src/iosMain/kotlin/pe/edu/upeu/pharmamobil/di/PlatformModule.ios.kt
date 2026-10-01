@@ -7,4 +7,5 @@ import org.koin.dsl.module
 
 actual val platformModule: Module = module {
     single<HttpClientEngine> { Darwin.create() }
+    single(BaseUrlApi) { "http://localhost:8080/" }
 }

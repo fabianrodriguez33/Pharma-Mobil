@@ -1,21 +1,24 @@
 package pe.edu.upeu.pharmamobil.data.mapper
 
-import pe.edu.upeu.pharmamobil.data.remote.dto.ProductoDto
+import pe.edu.upeu.pharmamobil.data.remote.dto.ProductoRequestDto
+import pe.edu.upeu.pharmamobil.data.remote.dto.ProductoResponseDto
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 
-/**
- * El dominio actual solo conoce id, nombre, precio y stock. La API no expone
- * stock, asi que se inicia en 0; descripcion y categoria no se mapean
- * para no tocar el modelo de dominio.
- */
-fun ProductoDto.toDomain(): Producto = Producto(
-    id = id.toLong(),
-    nombre = title.ifBlank { "Sin nombre" },
-    precio = price,
-    stock = 0,
-    imagen = images.firstOrNull().orEmpty()
+fun ProductoResponseDto.toDomain(): Producto = Producto(
+    id = id,
+    nombre = nombre,
+    precio = precio,
+    stock = stock
+)
+
+fun Producto.toRequestDto(categoriaId: Long): ProductoRequestDto = ProductoRequestDto(
+    nombre = nombre,
+    precio = precio,
+    stock = stock,
+    estado = true,
+    categoriaId = categoriaId
 )
 
 /** Descarta los productos que violarian los invariantes del dominio (p. ej. precio 0). */
-fun List<ProductoDto>.toDomainValidos(): List<Producto> =
+fun List<ProductoResponseDto>.toDomainValidos(): List<Producto> =
     mapNotNull { dto -> runCatching { dto.toDomain() }.getOrNull() }

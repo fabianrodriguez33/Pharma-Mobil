@@ -13,8 +13,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-fun crearHttpClient(engine: HttpClientEngine): HttpClient {
+fun crearHttpClient(engine: HttpClientEngine, baseUrl: String): HttpClient {
     return HttpClient(engine) {
+        // 4xx/5xx lanzan ClientRequestException/ServerResponseException (se traducen a ErrorApi)
+        expectSuccess = true
+
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
@@ -36,7 +39,7 @@ fun crearHttpClient(engine: HttpClientEngine): HttpClient {
         }
 
         install(DefaultRequest) {
-            url("https://api.escuelajs.co/api/v1/")
+            url(baseUrl)
             header(HttpHeaders.ContentType, "application/json")
         }
     }

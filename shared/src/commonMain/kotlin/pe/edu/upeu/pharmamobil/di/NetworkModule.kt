@@ -5,16 +5,16 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 import pe.edu.upeu.pharmamobil.data.remote.ProductoApi
 import pe.edu.upeu.pharmamobil.data.remote.crearHttpClient
-import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositoryImpl
+import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositoryRest
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobil.presentation.productos.ProductosViewModel
 
-/** Calificador del repositorio remoto; el binding sin calificar sigue siendo el de memoria. */
-val RepositorioRemoto = named("remoto")
+/** URL base de PharmaSoft; cada plataforma la aporta desde su platformModule. */
+val BaseUrlApi = named("baseUrlApi")
 
 val networkModule = module {
-    single { crearHttpClient(get()) }
+    single { crearHttpClient(get(), get(BaseUrlApi)) }
     single { ProductoApi(get()) }
-    single<ProductoRepository>(RepositorioRemoto) { ProductoRepositoryImpl(get()) }
-    viewModel { ProductosViewModel(get(RepositorioRemoto)) }
+    single<ProductoRepository> { ProductoRepositoryRest(get()) }
+    viewModel { ProductosViewModel(get()) }
 }
