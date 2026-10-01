@@ -49,6 +49,7 @@ El mapper (`ProductoDto.toDomain()`) convierte el DTO al modelo de dominio `Prod
 ---
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+
 ## Conectividad REST (Sesión 07)
 
 ### Configuración del Cliente Ktor
