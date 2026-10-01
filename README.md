@@ -49,3 +49,18 @@ El mapper (`ProductoDto.toDomain()`) convierte el DTO al modelo de dominio `Prod
 ---
 
 Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+## Conectividad REST (Sesión 07)
+
+### Configuración del Cliente Ktor
+- **Cliente HTTP:** Ktor Client v3.6.0 (motor OkHttp en Android y Darwin en iOS).
+- **URL Base:** `https://api.escuelajs.co/api/v1/`
+- **Plugins Instalados:** `ContentNegotiation` (con `kotlinx.serialization`), `Logging` (nivel HEADERS), `HttpTimeout` y `DefaultRequest`.
+
+### Endpoints Consumidos
+- `GET /products`: Obtiene el catálogo de productos remotos.
+  - **Parámetros:** `limit` (Int), `offset` (Int).
+  - **Respuesta:** `List<ProductoDto>` mapeada a `List<Producto>`.
+
+### Estructura DTO vs Dominio
+- **DTO (`ProductoDto`):** Mapea los campos del contrato REST (`id`, `title`, `price`, `description`, `images`, `category`).
+- **Dominio (`Producto`):** Mapeo limpio que conserva los atributos necesarios para el negocio (`id`, `nombre`, `precio`, `stock`, `imagen`).

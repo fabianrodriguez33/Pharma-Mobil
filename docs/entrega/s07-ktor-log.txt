@@ -1,0 +1,5 @@
+10-01 12:03:16.985 I System.out: HttpClient: REQUEST: https://api.escuelajs.co/api/v1/products?offset=0&limit=10
+10-01 12:03:23.001 I System.out: HttpClient: RESPONSE: 200
+--- Modo Avion ---
+10-01 12:04:29.607 I System.out: HttpClient: REQUEST: https://api.escuelajs.co/api/v1/products?offset=0&limit=10
+10-01 12:04:30.385 I System.out: HttpClient: REQUEST https://api.escuelajs.co/api/v1/products?offset=0&limit=10 failed with exception: java.net.UnknownHostException: Unable to resolve host
