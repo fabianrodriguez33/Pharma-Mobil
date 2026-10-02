@@ -24,6 +24,8 @@ fun crearHttpClient(engine: HttpClientEngine, baseUrl: String): HttpClient {
                 prettyPrint = true
                 isLenient = true
                 coerceInputValues = true
+                // estado y categoriaId tienen valor por defecto pero el backend los exige
+                encodeDefaults = true
             })
         }
 

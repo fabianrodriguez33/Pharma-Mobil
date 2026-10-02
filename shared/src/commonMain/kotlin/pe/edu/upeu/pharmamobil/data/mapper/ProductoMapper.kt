@@ -19,6 +19,10 @@ fun Producto.toRequestDto(categoriaId: Long): ProductoRequestDto = ProductoReque
     categoriaId = categoriaId
 )
 
-/** Descarta los productos que violarian los invariantes del dominio (p. ej. precio 0). */
+/**
+ * El backend elimina con baja logica (estado = false) y el listado devuelve
+ * tambien los inactivos: se omiten. Tambien se descartan los que violarian
+ * los invariantes del dominio (p. ej. precio 0).
+ */
 fun List<ProductoResponseDto>.toDomainValidos(): List<Producto> =
-    mapNotNull { dto -> runCatching { dto.toDomain() }.getOrNull() }
+    filter { it.estado }.mapNotNull { dto -> runCatching { dto.toDomain() }.getOrNull() }
