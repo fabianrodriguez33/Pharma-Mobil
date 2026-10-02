@@ -65,3 +65,48 @@ Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-mu
 ### Estructura DTO vs Dominio
 - **DTO (`ProductoDto`):** Mapea los campos del contrato REST (`id`, `title`, `price`, `description`, `images`, `category`).
 - **Dominio (`Producto`):** Mapeo limpio que conserva los atributos necesarios para el negocio (`id`, `nombre`, `precio`, `stock`, `imagen`).
+
+## CRUD REST PharmaSoft (Sesión 08)
+
+- **URL base:** `http://10.0.2.2:8080/` en el emulador Android (equivale a `http://localhost:8080/` del equipo anfitrión). Recurso: `/api/v1/productos`.
+- **Backend:** PharmaSoft (Spring Boot + Oracle Free). La baja es lógica: el producto queda con `estado = false` y deja de listarse en la app.
+
+| Operación | Método y ruta | Payload / DTO | Éxito |
+|---|---|---|---|
+| Listar | `GET /api/v1/productos?pagina=0&tamanio=20` | `PaginaResponseDto<ProductoResponseDto>` | `200 OK` |
+| Obtener | `GET /api/v1/productos/{id}` | `ProductoResponseDto` | `200 OK` |
+| Crear | `POST /api/v1/productos` | `ProductoRequestDto` → `ProductoResponseDto` | `201 Created` |
+| Editar | `PUT /api/v1/productos/{id}` | `ProductoRequestDto` → `ProductoResponseDto` | `200 OK` |
+| Eliminar | `DELETE /api/v1/productos/{id}` | sin cuerpo (no se deserializa JSON) | `204 No Content` |
+
+## Manejo de Errores
+
+Todo fallo de red o HTTP se traduce en `data/repository` a `ErrorApiException(ErrorApi)`; la capa de presentación nunca ve tipos de Ktor. `toErrorApi()` relanza `CancellationException` antes del catch genérico.
+
+| Origen | `ErrorApi` | Mensaje al usuario |
+|---|---|---|
+| `400` con `validationErrors` | `Validacion(porCampo)` | Mensaje bajo `nombreError`, `precioError` o `stockError` |
+| `404` | `NoEncontrado` | "El producto ya no existe" |
+| `409` (regla de negocio, duplicado, ya inactivo) | `Conflicto(mensaje)` | Mensaje enviado por el servidor |
+| `5xx` | `Servidor` | "El servidor no está disponible. Inténtalo más tarde" |
+| `ConnectException` / host no resuelto | `SinConexion` | "Sin conexión con el servidor" |
+| `HttpRequestTimeoutException` / `ConnectTimeoutException` | `TiempoAgotado` | "El servidor tardó demasiado en responder" |
+| otros | `Desconocido(detalle)` | detalle |
+| `CancellationException` | (se relanza, sin `ErrorApi`) | ninguno |
+
+### Estado de pantalla: `Fase` y `Operacion`
+
+`ProductoUiState` separa dos ejes independientes:
+
+- **`Fase`** (qué se muestra): `Cargando`, `SinProductos`, `ConProductos(lista)`, `Error(mensaje)`.
+- **`Operacion`** (qué acción corre): `Inactiva`, `EnCurso(Tipo.Crear | Actualizar | Eliminar)`, `Fallida(mensaje)`.
+
+Los errores 400 caen en el formulario sin cambiar la `Fase`; los fallos de red o conflictos quedan en `Operacion.Fallida` sin tocar la lista.
+
+### Pruebas automatizadas
+
+```bash
+./gradlew testAndroidHostTest assembleDebug
+```
+
+El informe de la actividad está en `docs/entrega/S08_ActividadAutonoma_RodriguezBazan.docx`.

@@ -1,5 +1,6 @@
 package pe.edu.upeu.pharmamobil.presentation.producto
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -211,5 +212,47 @@ class ProductoViewModelTest {
             estado.operacion
         )
         assertEquals(ProductoUiState.Fase.SinProductos, estado.fase)
+    }
+
+    @Test
+    fun laCargaPasaDeCargandoAConProductos() = runTest {
+
+        val puerta = CompletableDeferred<Unit>()
+        val repositorio = FakeProductoRepository(
+            mutableListOf(Producto(id = 1L, nombre = "Paracetamol", precio = 12.5, stock = 50))
+        ).apply { puertaAlListar = puerta }
+
+        val viewModel = nuevoViewModel(repositorio)
+
+        assertEquals(ProductoUiState.Fase.Cargando, viewModel.uiState.value.fase)
+
+        puerta.complete(Unit)
+
+        val fase = assertIs<ProductoUiState.Fase.ConProductos>(viewModel.uiState.value.fase)
+        assertEquals(listOf("Paracetamol"), fase.productos.map { it.nombre })
+    }
+
+    @Test
+    fun eliminarPasaPorEnCursoEliminarYVuelveAInactiva() = runTest {
+
+        val puerta = CompletableDeferred<Unit>()
+        val repositorio = FakeProductoRepository(
+            mutableListOf(Producto(id = 1L, nombre = "Paracetamol", precio = 12.5, stock = 50))
+        )
+        val viewModel = nuevoViewModel(repositorio)
+        repositorio.puertaAlEliminar = puerta
+
+        viewModel.eliminar(1L)
+
+        assertEquals(
+            ProductoUiState.Operacion.EnCurso(ProductoUiState.Operacion.Tipo.Eliminar),
+            viewModel.uiState.value.operacion
+        )
+        assertTrue(viewModel.uiState.value.ocupado)
+
+        puerta.complete(Unit)
+
+        assertEquals(ProductoUiState.Operacion.Inactiva, viewModel.uiState.value.operacion)
+        assertEquals(ProductoUiState.Fase.SinProductos, viewModel.uiState.value.fase)
     }
 }

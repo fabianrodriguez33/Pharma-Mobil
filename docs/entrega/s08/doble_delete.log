@@ -1,0 +1,3 @@
+### DELETE #1 (curl)
+DELETE 24 (1ra) -> HTTP 204
+DELETE 24 (2da, desde la app) -> HTTP 409 (ver captura 10 y logcat)

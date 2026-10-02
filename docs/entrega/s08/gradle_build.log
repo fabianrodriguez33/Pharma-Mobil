@@ -1,0 +1,126 @@
+Reusing configuration cache.
+> Task :shared:generateAndroidHostTestAssets UP-TO-DATE
+> Task :shared:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:androidPreBuild UP-TO-DATE
+> Task :shared:preAndroidMainBuild UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:preAndroidHostTestBuild UP-TO-DATE
+> Task :shared:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:convertXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :shared:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:generateAndroidMainEmptyResourceFiles
+> Task :shared:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :androidApp:preBuild UP-TO-DATE
+> Task :androidApp:generateDebugAssets UP-TO-DATE
+> Task :androidApp:preDebugBuild UP-TO-DATE
+> Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :androidApp:mergeDebugNativeDebugMetadata NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForAndroidHostTest NO-SOURCE
+> Task :shared:androidJar
+> Task :shared:generateResourceAccessorsForAndroidHostTest NO-SOURCE
+> Task :shared:generateExpectResourceCollectorsForCommonMain
+> Task :shared:writeAndroidMainAarMetadata
+> Task :shared:generateComposeResClass
+> Task :shared:copyNonXmlValueResourcesForCommonMain
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :androidApp:createDebugCompatibleScreenManifests
+> Task :androidApp:generateDebugResources
+> Task :androidApp:desugarDebugFileDependencies
+> Task :shared:generateAndroidHostTestResources
+> Task :androidApp:extractDeepLinksDebug
+> Task :shared:mergeAndroidMainJniLibFolders
+> Task :androidApp:mergeDebugJniLibFolders
+> Task :shared:mergeAndroidMainNativeLibs NO-SOURCE
+> Task :androidApp:writeDebugAppMetadata
+> Task :shared:prepareComposeResourcesTaskForCommonMain
+> Task :shared:copyAndroidMainJniLibsProjectOnly
+> Task :androidApp:validateSigningDebug
+> Task :androidApp:writeDebugSigningConfigVersions
+> Task :shared:copyAndroidMainComposeResourcesToAndroidAssets
+> Task :shared:processAndroidMainManifest
+> Task :androidApp:javaPreCompileDebug
+> Task :androidApp:checkDebugAarMetadata
+> Task :shared:generateResourceAccessorsForCommonMain
+> Task :shared:checkAndroidHostTestAarMetadata
+> Task :shared:mergeAndroidMainAssets
+> Task :androidApp:mergeDebugNativeLibs
+> Task :shared:packageAndroidMainResources
+> Task :androidApp:mergeDebugAssets
+> Task :shared:mapAndroidHostTestSourceSetPaths
+> Task :shared:compileAndroidMainLibraryResources
+
+> Task :androidApp:stripDebugDebugSymbols
+Unable to strip the following libraries, packaging them as they are: libandroidx.graphics.path.so. Run with --info option to learn more.
+
+> Task :androidApp:mapDebugSourceSetPaths
+> Task :shared:generateActualResourceCollectorsForAndroidMain
+> Task :androidApp:processDebugNavigationResources
+> Task :androidApp:compressDebugAssets
+> Task :androidApp:packageDebugResources
+> Task :shared:parseAndroidMainLocalResources
+> Task :androidApp:compileDebugNavigationResources
+> Task :shared:generateAndroidMainRFile
+> Task :androidApp:checkDebugDuplicateClasses
+> Task :shared:mergeAndroidHostTestAssets
+> Task :androidApp:parseDebugLocalResources
+> Task :androidApp:generateDebugRFile
+> Task :shared:processAndroidHostTestManifest
+> Task :androidApp:processDebugMainManifest
+> Task :androidApp:processDebugManifest
+> Task :androidApp:processDebugManifestForPackage
+> Task :shared:mergeAndroidHostTestResources
+> Task :androidApp:mergeDebugResources
+> Task :androidApp:processDebugResources
+> Task :shared:processAndroidHostTestResources
+> Task :shared:packageAndroidHostTestForUnitTest
+> Task :shared:generateAndroidHostTestConfig
+
+> Task :shared:compileAndroidMain
+w: file:///D:/DAM/pharmaMobil-master/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobil/App.kt:73:13 'fun KoinContext(koin: Koin = ..., content: ComposableFunction0<Unit>): Unit' is deprecated. KoinContext is not needed anymore. This can be removed. Compose Koin context is setup with StartKoin().
+
+> Task :shared:bundleAndroidMainClassesToCompileJar
+> Task :shared:processAndroidMainJavaRes
+> Task :shared:bundleAndroidMainClassesToRuntimeJar
+> Task :shared:bundleLibRuntimeToDirAndroidMain
+> Task :androidApp:mergeLibDexDebug
+> Task :androidApp:compileDebugKotlin
+> Task :androidApp:compileDebugJavaWithJavac NO-SOURCE
+> Task :androidApp:processDebugJavaRes
+> Task :androidApp:dexBuilderDebug
+> Task :androidApp:mergeProjectDexDebug
+> Task :shared:compileAndroidHostTest
+> Task :androidApp:mergeDebugJavaResource
+
+> Task :shared:testAndroidHostTest
+
+AppModuleTest > resuelveLosViewModelConSusCasosDeUso STANDARD_ERROR
+    SLF4J(W): No SLF4J providers were found.
+    SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+    SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+
+AppModuleTest > resuelveLosViewModelConSusCasosDeUso STANDARD_OUT
+    HttpClient: REQUEST: http://10.0.2.2:8080/api/v1/productos?pagina=0&tamanio=20
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+
+> Task :androidApp:mergeExtDexDebug
+> Task :androidApp:packageDebug
+> Task :androidApp:assembleDebug
+> Task :androidApp:createDebugApkListingFileRedirect
+
+[Incubating] Problems report is available at: file:///D:/DAM/pharmaMobil-master/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 34s
+70 actionable tasks: 70 executed
+Configuration cache entry reused.
