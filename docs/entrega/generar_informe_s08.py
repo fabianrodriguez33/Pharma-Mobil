@@ -2,6 +2,7 @@
 import glob
 import os
 import re
+import subprocess
 
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
@@ -175,7 +176,8 @@ parrafo("PRUEBAS INTEGRALES DE CRUD REST, TAXONOMÍA DE ERRORES Y PRUEBAS AUTOMA
 ficha([
     ("Estudiante / Autor", "Julio Fabián Rodríguez Bazán"),
     ("Repositorio GitHub", "https://github.com/fabianrodriguez33/Pharma-Mobil"),
-    ("Rama", "feature/ktor-client"),
+    ("Sesión", "Sesión 08 · Pruebas integrales de CRUD REST y taxonomía de errores"),
+    ("Rama", "feature/ktor-client · https://github.com/fabianrodriguez33/Pharma-Mobil/tree/feature/ktor-client"),
     ("Fecha de entrega", "01/10/2026"),
 ])
 salto()
@@ -197,6 +199,8 @@ for t in (
     "La app lista con tamanio=20 (valor por defecto de ProductoApi); la matriz usa tamanio=10 como pide la guía.",
     "El escenario 7 se reprodujo reduciendo temporalmente requestTimeoutMillis a 1 ms; el valor original (15 000 ms) "
     "fue restaurado.",
+    "No se incluyen capturas ni pruebas de iOS: el entorno de desarrollo es Windows y no dispone de macOS/Xcode. "
+    "Todas las capturas son de Android; la lógica compartida (commonTest) no depende de la plataforma.",
     "El escenario 3 se reprodujo borrando físicamente en la base de pruebas un producto de prueba creado por la app, "
     "de modo que la lista de la app quedó desactualizada y el PUT devolvió 404.",
 ):
@@ -327,21 +331,30 @@ esc = [
         ("Conclusión técnica", "El timeout se clasifica antes del caso genérico y no se confunde con una "
                                "cancelación de corrutina."),
     ], "13_s7_timeout.png", "Figura 12. Escenario 7: pantalla de error con ícono de red y botón Reintentar."),
-    ("Escenario 8: Cancelación de corrutina", "01/10/2026 · prueba automatizada", [
-        ("Pasos", "Pruebas ErrorApiTest en commonTest: toErrorApi() con CancellationException y cancelación del Job "
-                  "mientras traducirErrores {} espera la respuesta."),
-        ("Excepción", "CancellationException"),
-        ("ErrorApi producido", "Ninguno: la excepción se relanza antes del catch genérico."),
-        ("Mensaje en la UI", "Ninguno."),
-        ("Conclusión técnica", "Verificado por pruebas (4/4 en ErrorApiTest): la corrutina cancelada termina "
-                               "limpiamente, no se convierte en ErrorApi.Desconocido y no deja la UI en error."),
-    ], None, None),
+    ("Escenario 8: Cancelación de corrutina", "01/10/2026 · 22:02 (emulador) + pruebas automatizadas", [
+        ("Pasos", "Se congeló el contenedor Oracle (docker pause) para dejar la petición GET en vuelo. Se abrió Inventario "
+                  "(spinner «Cargando inventario…», Figura 13) y se salió de la app con la tecla Atrás, lo que destruye la "
+                  "pantalla y cancela el viewModelScope. Después se descongeló la base y se reabrió la app (Figura 14)."),
+        ("Excepción observada", "kotlinx.coroutines.JobCancellationException: Job was cancelled; job=SupervisorJobImpl{Cancelling} "
+                                "(logcat_cancelacion.log). No hubo FATAL EXCEPTION."),
+        ("ErrorApi producido", "Ninguno. toErrorApi() y traducirErrores relanzan la CancellationException antes del catch "
+                               "genérico, así que no se convierte en ErrorApi.Desconocido."),
+        ("Mensaje en la UI", "Ninguno: no se muestra error porque la pantalla ya no existe."),
+        ("Qué ocurre realmente", "En esta implementación el ViewModel es de la pantalla: al salir se cancela la corrutina, Ktor "
+                                 "registra la petición como cancelada y el proceso sigue vivo. Al volver, se crea un estado nuevo "
+                                 "y la carga termina en Fase.ConProductos con la lista real; no queda estado corrupto."),
+        ("Conclusión técnica", "Verificado en el emulador y con ErrorApiTest (4/4). Distinto del timeout (escenario 7): el timeout "
+                               "es una IOException que sí se traduce a TiempoAgotado; la cancelación es cooperativa y debe "
+                               "propagarse, porque tragarla dejaría la corrutina colgada."),
+    ], "14_s8_cancelacion_en_curso.png", "Figura 13. Escenario 8: petición en vuelo con la base de datos congelada."),
 ]
 for titulo, fecha, pares, img, leyenda in esc:
     doc.add_heading(titulo, 2)
     ficha([("Fecha/Hora", fecha), ("Plataforma", "Android (emulador Pixel 8) · backend PharmaSoft :8080")] + pares)
     if img:
         imagen(img, leyenda)
+    if img == "14_s8_cancelacion_en_curso.png":
+        imagen("15_s8_recuperacion.png", "Figura 14. Escenario 8: tras reabrir y descongelar la base, la carga termina con normalidad.")
 
 # ------------------------------------------------------------ producto 3
 doc.add_heading("Producto 3: Pruebas automatizadas multiplataforma (commonTest)", 1)
@@ -384,6 +397,13 @@ codigo("\n".join(kt[:40]))
 parrafo("Registro de la excepción de timeout y de conexión:", True)
 codigo(re.sub(r"\S+ \S+\s+\d+\s+\d+ I System.out: ", "",
               open(os.path.join(EV, "logcat_timeout.log"), encoding="utf-8", errors="ignore").read()))
+parrafo("Commits de la actividad (rama feature/ktor-client):", True)
+log_git = subprocess.run(["git", "log", "--format=%h|%s", "e49827d..HEAD"], cwd=AQUI, capture_output=True,
+                         text=True, encoding="utf-8").stdout.strip().splitlines()
+tabla(["Commit", "Mensaje", "Enlace"],
+      [[l.split("|", 1)[0], l.split("|", 1)[1],
+        "https://github.com/fabianrodriguez33/Pharma-Mobil/commit/" + l.split("|", 1)[0]] for l in log_git],
+      anchos=[1.8, 7.6, 7.2], tam=8)
 parrafo("README.md actualizado con las secciones «CRUD REST PharmaSoft» y «Manejo de Errores».")
 
 salida = os.path.join(AQUI, "S08_ActividadAutonoma_RodriguezBazan.docx")
