@@ -92,6 +92,7 @@ def tabla(encabezados, filas, anchos=None, tam=9):
             if n % 2 == 1:
                 sombrear(cs[i], GRIS_HEX)
     if anchos:
+        t.autofit = False
         for fila in t.rows:
             for i, a in enumerate(anchos):
                 fila.cells[i].width = Cm(a)
@@ -117,7 +118,7 @@ def ficha(pares):
     doc.add_paragraph().paragraph_format.space_after = Pt(2)
 
 
-def imagen(nombre, leyenda, ancho=5.2):
+def imagen(nombre, leyenda, ancho=4.3):
     im = Image.open(os.path.join(EV, nombre)).convert("RGB")
     im.thumbnail((620, 1380))
     mini = os.path.join(TMP, nombre.replace(".png", ".jpg"))
@@ -224,7 +225,7 @@ tabla(
         ["5", "DELETE /api/v1/productos/{id}", "id = 21", "Sin cuerpo", "204 No Content", "204 No Content",
          "Respuesta vacía; ProductoApi.eliminar no llama a body(), no se deserializa JSON"],
     ],
-    anchos=[0.6, 3.2, 3.4, 2.7, 1.5, 1.5, 3.7], tam=8)
+    anchos=[0.6, 3.0, 3.2, 2.7, 1.7, 1.7, 3.7], tam=8)
 parrafo("Extracto del registro de peticiones (curl_crud.log):", True)
 codigo("""\
 ### POST /api/v1/productos           -> HTTP 201
