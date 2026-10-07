@@ -1,4 +1,4 @@
-package pe.edu.upeu.pharmamobil.domain.usecase
+package pe.edu.upeu.pharmamobil.presentation.productos
 
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.platform.formatearSoles

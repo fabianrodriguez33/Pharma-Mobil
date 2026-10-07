@@ -37,9 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
-import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
-import pe.edu.upeu.pharmamobil.platform.formatearSoles
 
 @Composable
 fun ProductosScreen(
@@ -83,7 +81,7 @@ fun ProductosScreen(
 }
 
 @Composable
-private fun CatalogoGrid(productos: List<Producto>, onCompartir: (Producto) -> Unit) {
+private fun CatalogoGrid(productos: List<ProductoItemUi>, onCompartir: (Long) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         modifier = Modifier.fillMaxSize(),
@@ -110,7 +108,7 @@ private fun CatalogoGrid(productos: List<Producto>, onCompartir: (Producto) -> U
 }
 
 @Composable
-private fun ProductoCard(producto: Producto, onCompartir: (Producto) -> Unit) {
+private fun ProductoCard(producto: ProductoItemUi, onCompartir: (Long) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -146,12 +144,12 @@ private fun ProductoCard(producto: Producto, onCompartir: (Producto) -> Unit) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = formatearSoles(producto.precio),
+                    text = producto.precio,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary
                 )
-                IconButton(onClick = { onCompartir(producto) }) {
+                IconButton(onClick = { onCompartir(producto.id) }) {
                     Icon(Icons.Default.Share, contentDescription = "Compartir ${producto.nombre}")
                 }
             }

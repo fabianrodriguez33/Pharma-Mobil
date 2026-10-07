@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
-import pe.edu.upeu.pharmamobil.domain.usecase.comoTextoParaCompartir
+import pe.edu.upeu.pharmamobil.platform.formatearSoles
 
 class ProductosViewModel(
     private val repository: ProductoRepository,
@@ -24,12 +24,20 @@ class ProductosViewModel(
         cargar()
     }
 
-    fun compartir(producto: Producto) = compartidor.compartir(producto.comoTextoParaCompartir())
+    private var productos: List<Producto> = emptyList()
+
+    fun compartir(id: Long) {
+        productos.firstOrNull { it.id == id }?.let { compartidor.compartir(it.comoTextoParaCompartir()) }
+    }
 
     fun cargar() = viewModelScope.launch {
         _estado.value = ProductosUiState.Loading
         try {
-            _estado.value = ProductosUiState.Success(repository.listar())
+            _estado.value = ProductosUiState.Success(
+                repository.listar().also { productos = it }.map {
+                    ProductoItemUi(it.id, it.nombre, it.imagen, formatearSoles(it.precio))
+                }
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
