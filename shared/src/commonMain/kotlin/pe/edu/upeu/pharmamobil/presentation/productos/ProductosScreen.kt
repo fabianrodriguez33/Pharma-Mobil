@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,10 +17,13 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +39,7 @@ import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
-import kotlin.math.round
+import pe.edu.upeu.pharmamobil.platform.formatearSoles
 
 @Composable
 fun ProductosScreen(
@@ -58,7 +62,7 @@ fun ProductosScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    CatalogoGrid(e.productos)
+                    CatalogoGrid(e.productos, viewModel::compartir)
                 }
 
             is ProductosUiState.Error ->
@@ -79,7 +83,7 @@ fun ProductosScreen(
 }
 
 @Composable
-private fun CatalogoGrid(productos: List<Producto>) {
+private fun CatalogoGrid(productos: List<Producto>, onCompartir: (Producto) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         modifier = Modifier.fillMaxSize(),
@@ -101,12 +105,12 @@ private fun CatalogoGrid(productos: List<Producto>) {
                 )
             }
         }
-        items(items = productos, key = { it.id }) { ProductoCard(it) }
+        items(items = productos, key = { it.id }) { ProductoCard(it, onCompartir) }
     }
 }
 
 @Composable
-private fun ProductoCard(producto: Producto) {
+private fun ProductoCard(producto: Producto, onCompartir: (Producto) -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -136,19 +140,21 @@ private fun ProductoCard(producto: Producto) {
                 minLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(
-                text = "S/ ${formatoPrecio(producto.precio)}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = formatearSoles(producto.precio),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                IconButton(onClick = { onCompartir(producto) }) {
+                    Icon(Icons.Default.Share, contentDescription = "Compartir ${producto.nombre}")
+                }
+            }
         }
     }
-}
-
-/** Dos decimales fijos sin depender de String.format (no existe en common). */
-private fun formatoPrecio(precio: Double): String {
-    val centimos = round(precio * 100).toLong()
-    val decimales = (centimos % 100).toString().padStart(2, '0')
-    return "${centimos / 100}.$decimales"
 }

@@ -16,5 +16,5 @@ val networkModule = module {
     single { crearHttpClient(get(), get(BaseUrlApi)) }
     single { ProductoApi(get()) }
     single<ProductoRepository> { ProductoRepositoryRest(get()) }
-    viewModel { ProductosViewModel(get()) }
+    viewModel { ProductosViewModel(get(), get()) }
 }

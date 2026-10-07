@@ -7,10 +7,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import pe.edu.upeu.pharmamobil.domain.model.Producto
+import pe.edu.upeu.pharmamobil.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
+import pe.edu.upeu.pharmamobil.domain.usecase.comoTextoParaCompartir
 
 class ProductosViewModel(
-    private val repository: ProductoRepository
+    private val repository: ProductoRepository,
+    private val compartidor: Compartidor
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow<ProductosUiState>(ProductosUiState.Loading)
@@ -19,6 +23,8 @@ class ProductosViewModel(
     init {
         cargar()
     }
+
+    fun compartir(producto: Producto) = compartidor.compartir(producto.comoTextoParaCompartir())
 
     fun cargar() = viewModelScope.launch {
         _estado.value = ProductosUiState.Loading
