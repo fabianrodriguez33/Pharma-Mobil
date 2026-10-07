@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,8 +27,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -37,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
+import pe.edu.upeu.pharmamobil.platform.InfoDispositivo
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
 
 @Composable
@@ -101,6 +107,7 @@ private fun CatalogoGrid(productos: List<ProductoItemUi>, onCompartir: (Long) ->
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                AcercaDelDispositivo()
             }
         }
         items(items = productos, key = { it.id }) { ProductoCard(it, onCompartir) }
@@ -154,5 +161,26 @@ private fun ProductoCard(producto: ProductoItemUi, onCompartir: (Long) -> Unit) 
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun AcercaDelDispositivo() {
+    val info = remember { InfoDispositivo() }
+    var visible by remember { mutableStateOf(false) }
+    TextButton(onClick = { visible = true }) { Text("Acerca del dispositivo") }
+    if (visible) {
+        AlertDialog(
+            onDismissRequest = { visible = false },
+            title = { Text("Acerca del dispositivo") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Sistema: ${info.sistemaOperativo}")
+                    Text("Versión: ${info.versionSistema}")
+                    Text("Modelo: ${info.modeloDispositivo}")
+                }
+            },
+            confirmButton = { TextButton(onClick = { visible = false }) { Text("Cerrar") } }
+        )
     }
 }
