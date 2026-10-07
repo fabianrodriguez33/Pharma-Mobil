@@ -176,21 +176,22 @@ parrafo("DIFERENCIAS POR PLATAFORMA Y EVIDENCIA EN IOS Y ANDROID", True, 14, Tru
 ficha([
     ("Estudiante / Autor", "Julio Fabián Rodríguez Bazán"),
     ("Repositorio GitHub", "https://github.com/fabianrodriguez33/Pharma-Mobil"),
-    ("Rama", "feature/expect-actual-rodriguez"),
+    ("Sesión", "Sesión 09 · Diferencias por plataforma y evidencia en iOS y Android"),
+    ("Rama", "feature/expect-actual-rodriguez · https://github.com/fabianrodriguez33/Pharma-Mobil/tree/feature/expect-actual-rodriguez"),
     ("Fecha de entrega", "12/10/2026"),
 ])
 salto()
 
 # ------------------------------------------------------------ producto 1
 doc.add_heading("Producto 1: Inventario de capacidades nativas", 1)
-tabla(["Capacidad", "Mecanismo / declaración", "Android", "iOS"], [
-    ["Formato de moneda", "expect fun formatearSoles(valor: Double): String",
+tabla(["Capacidad", "Declaración (commonMain)", "Android (androidMain)", "iOS (iosMain)"], [
+    ["Formato de moneda", "expect fun formatearSoles(valor: Double): String · commonMain/.../platform/Formato.kt",
      "NumberFormat con Locale(\"es\", \"PE\") en androidMain/.../Formato.android.kt",
      "NSNumberFormatter con NSLocale(\"es_PE\") en iosMain/.../Formato.ios.kt"],
-    ["Compartir producto", "interface Compartidor (domain) + Koin",
+    ["Compartir producto", "interface Compartidor (domain) + Koin · commonMain/.../domain/platform/Compartidor.kt",
      "Intent.ACTION_SEND en androidMain/.../CompartidorAndroid.kt; registrado en PlatformModule.android.kt con androidContext()",
      "UIActivityViewController en iosMain/.../CompartidorIos.kt; registrado en PlatformModule.ios.kt"],
-    ["Información del dispositivo", "expect class InfoDispositivo",
+    ["Información del dispositivo", "expect class InfoDispositivo · commonMain/.../platform/InfoDispositivo.kt",
      "Build.VERSION.RELEASE y Build.MODEL en androidMain/.../InfoDispositivo.android.kt",
      "UIDevice.currentDevice en iosMain/.../InfoDispositivo.ios.kt"],
 ], anchos=[2.8, 4.2, 5.0, 4.6], tam=8.5)
@@ -211,9 +212,10 @@ INFORME = [
         "ProductosViewModel sin tocar ningún Intent. Una función expect no se puede sustituir así sin añadir otra capa.",
         'En términos de diseño, expect/actual acopla el código común a una implementación fija por destino, mientras que la interfaz permite elegir la implementación en tiempo de ejecución, algo útil para pruebas, previsualizaciones o futuras plataformas como escritorio.']),
     ("2. Qué ocurre cuando falta un actual", [
-        "Si elimino Formato.ios.kt, la compilación del destino iOS falla con: «Expected declaration 'fun "
-        "formatearSoles' has no actual declaration in module PharmaMobil.shared for Native». Es un error de "
-        "compilación, no de ejecución: el proyecto no genera el framework hasta que exista el actual.",
+        "Para observarlo eliminé temporalmente Formato.android.kt y compilé con ./gradlew :shared:compileAndroidMain. "
+        "El compilador respondió, literalmente: «e: file:///D:/DAM/pharmaMobil-master/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobil/platform/Formato.kt:7:1 Expected formatearSoles has no actual declaration in module <commonMain> for JVM» "
+        "y la tarea terminó en BUILD FAILED (s09/compilador_falta_actual.log). Es un error de compilación, no de ejecución: "
+        "el proyecto no genera el artefacto hasta que exista el actual. Restauré el archivo y el build volvió a pasar.",
         "Esta es la gran ventaja de expect/actual: la omisión se detecta antes de entregar la app. Con una interfaz + "
         "Koin, en cambio, el olvido aparecería en ejecución, como NoDefinitionFoundException al resolver Compartidor. "
         "Por eso las pruebas de módulo (AppModuleTest) resultan imprescindibles para ese enfoque.",
@@ -291,6 +293,7 @@ salto()
 
 # ------------------------------------------------------------ producto 4
 doc.add_heading("Producto 4: Evidencias, aislamiento y README", 1)
+parrafo("Mensaje del compilador sin el actual: ver pregunta 2 del Producto 2 (s09/compilador_falta_actual.log).")
 parrafo("Capturas del emulador Pixel 8 (Android 17) contra el backend PharmaSoft real (10.0.2.2:8080):")
 imagen("01_catalogo_soles.png", "Figura 1. Catálogo con precio en soles (S/ 12.50) formateado por formatearSoles.", 4.6)
 imagen("02_compartir.png", "Figura 2. Selector de compartir nativo de Android (Intent.createChooser).", 4.6)
