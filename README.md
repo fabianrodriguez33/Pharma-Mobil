@@ -110,3 +110,21 @@ Los errores 400 caen en el formulario sin cambiar la `Fase`; los fallos de red o
 ```
 
 El informe de la actividad está en `docs/entrega/S08_ActividadAutonoma_RodriguezBazan.docx`.
+
+### Capacidades nativas (Guia 09)
+
+Dos estrategias de KMP para acceder a la plataforma:
+
+1. **`expect/actual` (funcion pura):** `formatearSoles(valor: Double): String` formatea precios como moneda peruana (`S/ 10.00`).
+2. **Interfaz + Koin (capacidad con contexto):** `Compartidor` (en `domain`) se implementa por plataforma y se inyecta desde cada `platformModule`.
+
+El formato se aplica en `presentation` (`ProductosViewModel` entrega el precio ya formateado y arma el texto a compartir con `comoTextoParaCompartir()`); `presentation` no importa `android.*` ni `platform.UIKit.*`.
+
+| Elemento | commonMain | androidMain | iosMain |
+|---|---|---|---|
+| Formato de moneda | `platform/Formato.kt` (`expect`) | `platform/Formato.android.kt` (`NumberFormat`, `es_PE`) | `platform/Formato.ios.kt` (`NSNumberFormatter`, `PEN`) |
+| Compartir | `domain/platform/Compartidor.kt` (interfaz) | `platform/CompartidorAndroid.kt` (`Intent.ACTION_SEND`) | `platform/CompartidorIos.kt` (`UIActivityViewController`) |
+| Registro en Koin | `di/AppModule.kt` (`expect val platformModule`) | `di/PlatformModule.android.kt` | `di/PlatformModule.ios.kt` |
+| Texto a compartir | `presentation/productos/TextoParaCompartir.kt` | | |
+
+Uso: en "Catalogo API" cada tarjeta muestra el precio en soles y un icono de Compartir.
