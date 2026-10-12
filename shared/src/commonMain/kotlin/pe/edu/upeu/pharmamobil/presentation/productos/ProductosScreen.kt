@@ -19,8 +19,7 @@ import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import pe.edu.upeu.pharmamobil.theme.TarjetaVidrio
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -116,13 +115,9 @@ private fun CatalogoGrid(productos: List<ProductoItemUi>, onCompartir: (Long) ->
 
 @Composable
 private fun ProductoCard(producto: ProductoItemUi, onCompartir: (Long) -> Unit) {
-    Card(
+    TarjetaVidrio(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = MaterialTheme.shapes.large
     ) {
         AsyncImage(
             model = producto.imagen.ifBlank { null },
@@ -154,7 +149,7 @@ private fun ProductoCard(producto: ProductoItemUi, onCompartir: (Long) -> Unit) 
                     text = producto.precio,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
                 IconButton(onClick = { onCompartir(producto.id) }) {
                     Icon(Icons.Default.Share, contentDescription = "Compartir ${producto.nombre}")

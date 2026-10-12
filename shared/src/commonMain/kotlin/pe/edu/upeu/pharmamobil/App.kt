@@ -1,7 +1,14 @@
 package pe.edu.upeu.pharmamobil
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
@@ -11,7 +18,6 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Store
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,9 +36,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.KoinContext
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -42,7 +50,11 @@ import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
 import pe.edu.upeu.pharmamobil.presentation.inicio.InicioScreen
 import pe.edu.upeu.pharmamobil.presentation.producto.ProductoScreen
 import pe.edu.upeu.pharmamobil.presentation.productos.ProductosScreen
+import pe.edu.upeu.pharmamobil.theme.BarraVidrio
+import pe.edu.upeu.pharmamobil.theme.FondoAurora
 import pe.edu.upeu.pharmamobil.theme.PharmaMobilTheme
+import pharmamobil.shared.generated.resources.Res
+import pharmamobil.shared.generated.resources.logo_principal
 
 /** Una sola fuente para la barra inferior y el titulo de la barra superior. */
 private data class Destino(
@@ -84,18 +96,29 @@ fun App() = KoinContext {
         darkTheme = darkTheme
     ) {
 
+        FondoAurora {
         Scaffold(
 
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = Color.Transparent,
 
             topBar = {
 
                 TopAppBar(
                     title = {
-                        Text(
-                            text = tituloDe(pantallaActual),
-                            fontWeight = FontWeight.Bold
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(Res.drawable.logo_principal),
+                                contentDescription = null,
+                                modifier = Modifier.size(30.dp)
+                            )
+                            Text(
+                                text = tituloDe(pantallaActual),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     },
                     actions = {
                         IconButton(
@@ -108,7 +131,8 @@ fun App() = KoinContext {
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                        containerColor = Color.Transparent,
+                        scrolledContainerColor = Color.Transparent,
                         titleContentColor = MaterialTheme.colorScheme.onSurface,
                         actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -117,10 +141,16 @@ fun App() = KoinContext {
 
             bottomBar = {
 
-                Box {
+                BarraVidrio(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .padding(start = 16.dp, end = 16.dp, bottom = 10.dp, top = 4.dp)
+                ) {
                     NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 0.dp
+                        containerColor = Color.Transparent,
+                        tonalElevation = 0.dp,
+                        windowInsets = WindowInsets(0, 0, 0, 0),
+                        modifier = Modifier.height(68.dp)
                     ) {
                         DESTINOS.forEach { destino ->
                             NavigationBarItem(
@@ -135,12 +165,13 @@ fun App() = KoinContext {
                                 label = {
                                     Text(
                                         text = destino.titulo,
-                                        maxLines = 1
+                                        maxLines = 1,
+                                        style = MaterialTheme.typography.labelSmall
                                     )
                                 },
                                 colors = NavigationBarItemDefaults.colors(
                                     selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                                    selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                     indicatorColor = MaterialTheme.colorScheme.primaryContainer,
                                     unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
@@ -148,7 +179,6 @@ fun App() = KoinContext {
                             )
                         }
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                 }
             }
 
@@ -191,6 +221,7 @@ fun App() = KoinContext {
                         )
                 }
             }
+        }
         }
     }
 }

@@ -14,55 +14,54 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Identidad visual de PharmaMobil: fondo gris muy claro, tarjetas blancas y un
- * unico acento teal para las acciones. El ambar queda reservado para avisos.
- * Todas las superficies de tarjeta son blancas (surfaceContainerHighest es el
- * color por defecto de Card), asi no hace falta colorearlas una por una.
+ * Identidad visual de PharmaMobil: fondo #FEFEFE, acento #2FB69F y superficies
+ * de vidrio translucido (ver Vidrio.kt) sobre un degradado suave. El ambar
+ * queda reservado para avisos.
  */
-val TealMarca = Color(0xFF0F766E)
-val TealOscuro = Color(0xFF0A4F4A)
+val TealMarca = Color(0xFF2FB69F)
+val TealOscuro = Color(0xFF1E8C79)
 
 private val LightColors = lightColorScheme(
     primary = TealMarca,
-    onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFDCF3EF),
-    onPrimaryContainer = Color(0xFF053F3A),
-    secondary = Color(0xFF475569),
+    onPrimary = Color(0xFF032B25),
+    primaryContainer = Color(0xFFD9F4EE),
+    onPrimaryContainer = Color(0xFF0B4A40),
+    secondary = Color(0xFF4F6561),
     onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFE8EEF3),
-    onSecondaryContainer = Color(0xFF1E293B),
+    secondaryContainer = Color(0xFFE6F1EF),
+    onSecondaryContainer = Color(0xFF16322D),
     tertiary = Color(0xFFB45309),
     onTertiary = Color(0xFFFFFFFF),
     tertiaryContainer = Color(0xFFFEF3C7),
     onTertiaryContainer = Color(0xFF451A03),
-    error = Color(0xFFDC2626),
+    error = Color(0xFFD64545),
     onError = Color(0xFFFFFFFF),
-    errorContainer = Color(0xFFFEE2E2),
-    onErrorContainer = Color(0xFF7F1D1D),
-    background = Color(0xFFF5F7FA),
-    onBackground = Color(0xFF0F172A),
-    surface = Color(0xFFFFFFFF),
-    onSurface = Color(0xFF0F172A),
-    surfaceVariant = Color(0xFFE8EDF2),
-    onSurfaceVariant = Color(0xFF5B6675),
+    errorContainer = Color(0xFFFDE8E8),
+    onErrorContainer = Color(0xFF7A1F1F),
+    background = Color(0xFFFEFEFE),
+    onBackground = Color(0xFF0E1F1C),
+    surface = Color(0xFFFEFEFE),
+    onSurface = Color(0xFF0E1F1C),
+    surfaceVariant = Color(0xFFE9F1EF),
+    onSurfaceVariant = Color(0xFF55706B),
     surfaceContainerLowest = Color(0xFFFFFFFF),
-    surfaceContainerLow = Color(0xFFFFFFFF),
-    surfaceContainer = Color(0xFFFFFFFF),
-    surfaceContainerHigh = Color(0xFFF0F3F7),
+    surfaceContainerLow = Color(0xCCFFFFFF),
+    surfaceContainer = Color(0xCCFFFFFF),
+    surfaceContainerHigh = Color(0xFFF1F6F5),
     surfaceContainerHighest = Color(0xFFFFFFFF),
-    outline = Color(0xFF94A3B8),
-    outlineVariant = Color(0xFFE2E8F0)
+    outline = Color(0xFF8AA09B),
+    outlineVariant = Color(0x332FB69F)
 )
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFF5EEAD4),
-    onPrimary = Color(0xFF042F2E),
-    primaryContainer = Color(0xFF134E4A),
-    onPrimaryContainer = Color(0xFFCCFBF1),
-    secondary = Color(0xFF94A3B8),
-    onSecondary = Color(0xFF0F172A),
-    secondaryContainer = Color(0xFF1F2937),
-    onSecondaryContainer = Color(0xFFE2E8F0),
+    primary = TealMarca,
+    onPrimary = Color(0xFF032B25),
+    primaryContainer = Color(0xFF14463E),
+    onPrimaryContainer = Color(0xFFCFF5EC),
+    secondary = Color(0xFF9DB5B0),
+    onSecondary = Color(0xFF0B1A18),
+    secondaryContainer = Color(0xFF1C302D),
+    onSecondaryContainer = Color(0xFFDDEEEA),
     tertiary = Color(0xFFFCD34D),
     onTertiary = Color(0xFF451A03),
     tertiaryContainer = Color(0xFF78350F),
@@ -71,19 +70,19 @@ private val DarkColors = darkColorScheme(
     onError = Color(0xFF450A0A),
     errorContainer = Color(0xFF7F1D1D),
     onErrorContainer = Color(0xFFFEE2E2),
-    background = Color(0xFF0B1220),
-    onBackground = Color(0xFFE5E7EB),
-    surface = Color(0xFF111827),
-    onSurface = Color(0xFFE5E7EB),
-    surfaceVariant = Color(0xFF1F2937),
-    onSurfaceVariant = Color(0xFF9CA3AF),
-    surfaceContainerLowest = Color(0xFF0B1220),
-    surfaceContainerLow = Color(0xFF111827),
-    surfaceContainer = Color(0xFF151E2E),
-    surfaceContainerHigh = Color(0xFF1B2638),
-    surfaceContainerHighest = Color(0xFF172031),
-    outline = Color(0xFF64748B),
-    outlineVariant = Color(0xFF263244)
+    background = Color(0xFF08110F),
+    onBackground = Color(0xFFE6F0EE),
+    surface = Color(0xFF0C1715),
+    onSurface = Color(0xFFE6F0EE),
+    surfaceVariant = Color(0xFF1B2B28),
+    onSurfaceVariant = Color(0xFF93ADA8),
+    surfaceContainerLowest = Color(0xFF08110F),
+    surfaceContainerLow = Color(0xFF0C1715),
+    surfaceContainer = Color(0xFF101D1A),
+    surfaceContainerHigh = Color(0xFF162522),
+    surfaceContainerHighest = Color(0xFF172522),
+    outline = Color(0xFF5E7873),
+    outlineVariant = Color(0x3D2FB69F)
 )
 
 private val Tipografia = Typography().run {
@@ -117,11 +116,11 @@ fun PharmaMobilTheme(
         colorScheme = colors,
         typography = Tipografia,
         shapes = Shapes(
-            extraSmall = RoundedCornerShape(6.dp),
-            small = RoundedCornerShape(10.dp),
-            medium = RoundedCornerShape(14.dp),
-            large = RoundedCornerShape(20.dp),
-            extraLarge = RoundedCornerShape(28.dp)
+            extraSmall = RoundedCornerShape(8.dp),
+            small = RoundedCornerShape(12.dp),
+            medium = RoundedCornerShape(18.dp),
+            large = RoundedCornerShape(24.dp),
+            extraLarge = RoundedCornerShape(32.dp)
         ),
         content = content
     )

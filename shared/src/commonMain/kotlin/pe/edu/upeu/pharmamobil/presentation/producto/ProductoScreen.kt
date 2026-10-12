@@ -18,7 +18,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import pe.edu.upeu.pharmamobil.theme.TarjetaVidrio
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -159,7 +159,7 @@ private fun FormularioProductoCard(
     val enCurso = operacion as? ProductoUiState.Operacion.EnCurso
     val ocupado = enCurso != null
 
-    Card(
+    TarjetaVidrio(
         modifier = Modifier.fillMaxWidth()
     ) {
 
@@ -274,7 +274,7 @@ private fun ProductoItem(
     onEliminar: () -> Unit
 ) {
 
-    Card(
+    TarjetaVidrio(
         modifier = Modifier.fillMaxWidth()
     ) {
 

@@ -18,7 +18,7 @@ import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
+import pe.edu.upeu.pharmamobil.theme.TarjetaVidrio
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -139,7 +139,7 @@ private fun FormularioClienteCard(
     onRegistrar: () -> Unit
 ) {
 
-    Card(
+    TarjetaVidrio(
         modifier = Modifier.fillMaxWidth()
     ) {
 
@@ -230,7 +230,7 @@ private fun ClienteItem(
     cliente: ClienteUi
 ) {
 
-    Card(
+    TarjetaVidrio(
         modifier = Modifier.fillMaxWidth()
     ) {
 

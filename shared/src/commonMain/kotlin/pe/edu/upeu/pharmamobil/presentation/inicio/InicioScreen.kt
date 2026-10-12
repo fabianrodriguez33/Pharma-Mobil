@@ -1,9 +1,7 @@
 package pe.edu.upeu.pharmamobil.presentation.inicio
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,12 +14,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.LocalPharmacy
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Store
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -29,14 +24,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import pe.edu.upeu.pharmamobil.navigation.Screen
-import pe.edu.upeu.pharmamobil.theme.TealMarca
-import pe.edu.upeu.pharmamobil.theme.TealOscuro
+import org.jetbrains.compose.resources.painterResource
+import pe.edu.upeu.pharmamobil.theme.TarjetaVidrio
+import pharmamobil.shared.generated.resources.Res
+import pharmamobil.shared.generated.resources.logo_principal
 
 /** Cada acceso rapido de la portada lleva a uno de los modulos de la app. */
 private data class Opcion(
@@ -113,47 +107,39 @@ fun InicioScreen(
 @Composable
 private fun Portada() {
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(MaterialTheme.shapes.large)
-            .background(
-                Brush.linearGradient(
-                    colors = listOf(TealMarca, TealOscuro)
-                )
-            )
-            .padding(22.dp)
+    TarjetaVidrio(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.extraLarge
     ) {
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+        Row(
+            modifier = Modifier.padding(horizontal = 22.dp, vertical = 24.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(18.dp)
         ) {
 
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = Color.White.copy(alpha = 0.18f),
-                contentColor = Color.White
+            Image(
+                painter = painterResource(Res.drawable.logo_principal),
+                contentDescription = "Logo de PharmaMobil",
+                modifier = Modifier.size(76.dp)
+            )
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.LocalPharmacy,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(10.dp)
-                        .size(26.dp)
+
+                Text(
+                    text = "PharmaMobil",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Text(
+                    text = "Inventario, clientes y pedidos de tu botica en un solo lugar.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-
-            Text(
-                text = "PharmaMobil",
-                style = MaterialTheme.typography.headlineMedium,
-                color = Color.White
-            )
-
-            Text(
-                text = "Inventario, clientes y pedidos de tu botica en un solo lugar.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = Color.White.copy(alpha = 0.85f)
-            )
         }
     }
 }
@@ -167,11 +153,9 @@ private fun AccesoRapido(
     onClick: () -> Unit
 ) {
 
-    Card(
+    TarjetaVidrio(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
 
         Row(
