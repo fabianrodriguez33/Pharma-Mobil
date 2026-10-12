@@ -1,10 +1,22 @@
 package pe.edu.upeu.pharmamobil
 
 import androidx.compose.foundation.Image
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.remember
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.luminance
+import pe.edu.upeu.pharmamobil.theme.TealMarca
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,9 +33,6 @@ import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -100,6 +109,7 @@ fun App() = KoinContext {
         Scaffold(
 
             containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onBackground,
 
             topBar = {
 
@@ -146,36 +156,18 @@ fun App() = KoinContext {
                         .navigationBarsPadding()
                         .padding(start = 16.dp, end = 16.dp, bottom = 10.dp, top = 4.dp)
                 ) {
-                    NavigationBar(
-                        containerColor = Color.Transparent,
-                        tonalElevation = 0.dp,
-                        windowInsets = WindowInsets(0, 0, 0, 0),
-                        modifier = Modifier.height(68.dp)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 6.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         DESTINOS.forEach { destino ->
-                            NavigationBarItem(
-                                selected = pantallaActual == destino.screen,
+                            ItemNavegacion(
+                                destino = destino,
+                                seleccionado = pantallaActual == destino.screen,
                                 onClick = { pantallaActual = destino.screen },
-                                icon = {
-                                    Icon(
-                                        imageVector = destino.icono,
-                                        contentDescription = null
-                                    )
-                                },
-                                label = {
-                                    Text(
-                                        text = destino.titulo,
-                                        maxLines = 1,
-                                        style = MaterialTheme.typography.labelSmall
-                                    )
-                                },
-                                colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    selectedTextColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }
@@ -232,4 +224,67 @@ private fun tituloDe(
 ): String {
 
     return DESTINOS.first { it.screen == screen }.titulo
+}
+
+
+/** Item de la barra: el seleccionado es una capsula de vidrio con brillo, no un bloque tonal. */
+@Composable
+private fun ItemNavegacion(
+    destino: Destino,
+    seleccionado: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val forma = RoundedCornerShape(20.dp)
+    val colorContenido by animateColorAsState(
+        if (seleccionado) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    val interaccion = remember { MutableInteractionSource() }
+    val oscuro = MaterialTheme.colorScheme.background.luminance() < 0.5f
+
+    Column(
+        modifier = modifier
+            .padding(horizontal = 2.dp)
+            .clip(forma)
+            .then(
+                if (seleccionado) {
+                    Modifier
+                        .background(
+                            Brush.verticalGradient(
+                                listOf(
+                                    Color.White.copy(alpha = if (oscuro) 0.14f else 0.55f),
+                                    TealMarca.copy(alpha = if (oscuro) 0.30f else 0.20f)
+                                )
+                            )
+                        )
+                        .border(
+                            1.dp,
+                            Brush.linearGradient(
+                                listOf(Color.White.copy(alpha = 0.95f), TealMarca.copy(alpha = 0.35f))
+                            ),
+                            forma
+                        )
+                } else {
+                    Modifier
+                }
+            )
+            .clickable(interactionSource = interaccion, indication = null, onClick = onClick)
+            .padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        Icon(
+            imageVector = destino.icono,
+            contentDescription = null,
+            tint = colorContenido,
+            modifier = Modifier.size(24.dp)
+        )
+        Text(
+            text = destino.titulo,
+            style = MaterialTheme.typography.labelSmall,
+            color = colorContenido,
+            maxLines = 1,
+            fontWeight = if (seleccionado) FontWeight.SemiBold else FontWeight.Medium
+        )
+    }
 }

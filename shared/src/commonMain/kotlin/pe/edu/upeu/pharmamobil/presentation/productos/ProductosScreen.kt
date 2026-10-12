@@ -102,7 +102,7 @@ private fun CatalogoGrid(productos: List<ProductoItemUi>, onCompartir: (Long) ->
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "${productos.size} productos disponibles",
+                    text = if (productos.size == 1) "1 producto disponible" else "${productos.size} productos disponibles",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

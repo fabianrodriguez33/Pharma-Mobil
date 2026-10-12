@@ -97,6 +97,7 @@ fun TarjetaVidrio(
             modifier = modifier,
             shape = shape,
             color = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface,
             border = bordeVidrio(),
             content = interior
         )
@@ -105,6 +106,7 @@ fun TarjetaVidrio(
             modifier = modifier,
             shape = shape,
             color = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onSurface,
             border = bordeVidrio(),
             content = interior
         )

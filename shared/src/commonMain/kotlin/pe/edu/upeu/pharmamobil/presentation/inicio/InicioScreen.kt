@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -44,26 +45,26 @@ private val OPCIONES = listOf(
     Opcion(
         screen = Screen.Catalogo,
         icono = Icons.Default.Store,
-        titulo = "Ver catálogo",
-        descripcion = "Productos en línea con foto y precio."
+        titulo = "Catálogo",
+        descripcion = "Productos con foto y precio."
     ),
     Opcion(
         screen = Screen.Productos,
         icono = Icons.Default.Inventory2,
-        titulo = "Gestionar inventario",
-        descripcion = "Da de alta medicamentos con su precio y su stock."
+        titulo = "Inventario",
+        descripcion = "Medicamentos, precio y stock."
     ),
     Opcion(
         screen = Screen.Clientes,
         icono = Icons.Default.Person,
-        titulo = "Registrar clientes",
-        descripcion = "Guarda los datos de contacto para la boleta."
+        titulo = "Clientes",
+        descripcion = "Datos de contacto."
     ),
     Opcion(
         screen = Screen.Pedidos,
         icono = Icons.Default.ShoppingCart,
-        titulo = "Revisar pedidos",
-        descripcion = "Disponible en una próxima sesión del curso."
+        titulo = "Pedidos",
+        descripcion = "Próximamente."
     )
 )
 
@@ -89,16 +90,26 @@ fun InicioScreen(
             modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
         )
 
-        OPCIONES.forEach { opcion ->
+        OPCIONES.chunked(2).forEach { fila ->
 
-            AccesoRapido(
-                icono = opcion.icono,
-                titulo = opcion.titulo,
-                descripcion = opcion.descripcion,
-                onClick = {
-                    onNavegar(opcion.screen)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+
+                fila.forEach { opcion ->
+
+                    AccesoRapido(
+                        icono = opcion.icono,
+                        titulo = opcion.titulo,
+                        descripcion = opcion.descripcion,
+                        onClick = {
+                            onNavegar(opcion.screen)
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
-            )
+            }
         }
     }
 }
@@ -150,57 +161,48 @@ private fun AccesoRapido(
     icono: ImageVector,
     titulo: String,
     descripcion: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     TarjetaVidrio(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier,
+        shape = MaterialTheme.shapes.large
     ) {
 
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(14.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(138.dp)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
 
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.primary
-            ) {
-
-                Icon(
-                    imageVector = icono,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .size(22.dp)
-                )
-            }
+            Icon(
+                imageVector = icono,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(28.dp)
+            )
 
             Column(
-                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
 
                 Text(
                     text = titulo,
-                    style = MaterialTheme.typography.titleSmall
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1
                 )
 
                 Text(
                     text = descripcion,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2
                 )
             }
-
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline
-            )
         }
     }
 }
