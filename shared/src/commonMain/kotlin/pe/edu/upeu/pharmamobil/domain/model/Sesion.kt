@@ -12,5 +12,7 @@ data class Sesion(
 
     companion object {
         const val CATALOGO_ESCRIBIR = "CATALOGO_ESCRIBIR"
+        const val CLIENTES_LEER = "CLIENTES_LEER"
+        const val VENTAS_LEER = "VENTAS_LEER"
     }
 }

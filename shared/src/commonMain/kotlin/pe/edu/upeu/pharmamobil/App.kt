@@ -75,15 +75,17 @@ import pharmamobil.shared.generated.resources.logo_principal
 private data class Destino(
     val screen: Screen,
     val titulo: String,
-    val icono: ImageVector
+    val icono: ImageVector,
+    /** Permiso necesario para ver la seccion; null = visible para cualquier sesion. */
+    val permiso: String? = null
 )
 
 private val DESTINOS = listOf(
     Destino(Screen.Inicio, "Inicio", Icons.Default.Home),
     Destino(Screen.Productos, "Inventario", Icons.Default.Inventory2),
     Destino(Screen.Catalogo, "Catálogo", Icons.Default.Store),
-    Destino(Screen.Clientes, "Clientes", Icons.Default.Person),
-    Destino(Screen.Pedidos, "Pedidos", Icons.Default.ShoppingCart)
+    Destino(Screen.Clientes, "Clientes", Icons.Default.Person, Sesion.CLIENTES_LEER),
+    Destino(Screen.Pedidos, "Pedidos", Icons.Default.ShoppingCart, Sesion.VENTAS_LEER)
 )
 
 
@@ -124,7 +126,13 @@ fun App() = KoinContext {
                 viewModel = loginViewModel,
                 aviso = if (avisoExpirada) "Tu sesión expiró. Inicia sesión nuevamente." else null
             )
-        } else Scaffold(
+        } else {
+        val destinos = DESTINOS.filter { it.permiso == null || sesion.puede(it.permiso) }
+        // Si la seccion actual deja de estar permitida (otra sesion), se vuelve a Inicio.
+        androidx.compose.runtime.LaunchedEffect(destinos, pantallaActual) {
+            if (destinos.none { it.screen == pantallaActual }) pantallaActual = Screen.Inicio
+        }
+        Scaffold(
 
             containerColor = Color.Transparent,
             contentColor = MaterialTheme.colorScheme.onBackground,
@@ -186,7 +194,7 @@ fun App() = KoinContext {
                             .padding(horizontal = 6.dp, vertical = 6.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        DESTINOS.forEach { destino ->
+                        destinos.forEach { destino ->
                             ItemNavegacion(
                                 destino = destino,
                                 seleccionado = pantallaActual == destino.screen,
@@ -238,6 +246,7 @@ fun App() = KoinContext {
                         )
                 }
             }
+        }
         }
         }
     }

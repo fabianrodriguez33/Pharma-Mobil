@@ -140,3 +140,29 @@ Tercera capacidad: **`InfoDispositivo`** (`expect class`) entrega sistema operat
 El informe está en `docs/entrega/S09_ActividadAutonoma_RodriguezBazan.docx`.
 
 Uso: en "Catalogo API" cada tarjeta muestra el precio en soles y un icono de Compartir.
+
+## Autenticación (Guía 10)
+
+PharmaMobil se autentica contra PharmaSoft con JWT.
+
+- **Login:** `POST /api/v1/auth/login` con `{ "username", "password" }`. Respuesta: `token`, `username`, `nombreCompleto`, `roles`, `permisos`.
+- **Almacenamiento:** `AlmacenSeguro` (commonMain) con una implementación por plataforma: `AlmacenSeguroAndroid` (AES-GCM con Android Keystore) y `AlmacenSeguroIos` (Keychain). La sesión se restaura al reabrir la app.
+- **Cabecera:** el plugin `Auth` (Bearer) de Ktor adjunta `Authorization: Bearer <token>`; ninguna llamada la escribe a mano. `sendWithoutRequest` envía el token desde la primera petición, salvo en `auth/login`. La caché del token se invalida con `clearToken()` tras login y logout.
+- **Logging:** nivel `HEADERS` con `sanitizeHeader` sobre `Authorization` (el token nunca aparece en Logcat/Xcode).
+- **401:** se descarta la sesión y se vuelve al Login con el aviso «Tu sesión expiró».
+- **403:** se mantiene la sesión y se muestra «No tienes permiso para realizar esta acción».
+- **Permisos en la UI:** sin `CATALOGO_ESCRIBIR` se ocultan el formulario y las acciones de editar/eliminar; sin `CLIENTES_LEER` se oculta la pestaña Clientes; sin `VENTAS_LEER`, Pedidos.
+
+### Usuarios de prueba (PharmaSoft)
+
+| Usuario | Rol | Permisos |
+|---|---|---|
+| `admin` | ADMIN | todos |
+| `vendedor` | VENDEDOR | `CATALOGO_LEER`, `CLIENTES_LEER`, `CLIENTES_ESCRIBIR`, `VENTAS_LEER`, `VENTAS_REGISTRAR` |
+| `almacen` | ALMACENERO | `CATALOGO_LEER`, `CATALOGO_ESCRIBIR` |
+
+Las contraseñas están en `V3__datos_iniciales_seguridad.sql` del backend.
+
+### Emulador
+
+URL base `http://10.0.2.2:8080/` (tráfico en claro permitido en el manifiesto de desarrollo).
