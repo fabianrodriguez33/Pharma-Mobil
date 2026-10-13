@@ -143,15 +143,46 @@ Uso: en "Catalogo API" cada tarjeta muestra el precio en soles y un icono de Com
 
 ## Autenticación (Guía 10)
 
-PharmaMobil se autentica contra PharmaSoft con JWT.
+PharmaMobil se autentica contra **PharmaSoft** con JWT (Bearer). Rama de entrega: `feature/auth-jwt-rodriguez`.
 
-- **Login:** `POST /api/v1/auth/login` con `{ "username", "password" }`. Respuesta: `token`, `username`, `nombreCompleto`, `roles`, `permisos`.
-- **Almacenamiento:** `AlmacenSeguro` (commonMain) con una implementación por plataforma: `AlmacenSeguroAndroid` (AES-GCM con Android Keystore) y `AlmacenSeguroIos` (Keychain). La sesión se restaura al reabrir la app.
-- **Cabecera:** el plugin `Auth` (Bearer) de Ktor adjunta `Authorization: Bearer <token>`; ninguna llamada la escribe a mano. `sendWithoutRequest` envía el token desde la primera petición, salvo en `auth/login`. La caché del token se invalida con `clearToken()` tras login y logout.
-- **Logging:** nivel `HEADERS` con `sanitizeHeader` sobre `Authorization` (el token nunca aparece en Logcat/Xcode).
-- **401:** se descarta la sesión y se vuelve al Login con el aviso «Tu sesión expiró».
-- **403:** se mantiene la sesión y se muestra «No tienes permiso para realizar esta acción».
-- **Permisos en la UI:** sin `CATALOGO_ESCRIBIR` se ocultan el formulario y las acciones de editar/eliminar; sin `CLIENTES_LEER` se oculta la pestaña Clientes; sin `VENTAS_LEER`, Pedidos.
+### Flujo
+
+1. Al arrancar, `App` observa `SesionViewModel.sesion`. Sin sesión se muestra `LoginScreen`; con sesión, la app.
+2. `POST /api/v1/auth/login` con `{ "username", "password" }` devuelve `token`, `tipo`, `expiraEnSegundos`, `username`, `nombreCompleto`, `roles` y `permisos`.
+3. El token se guarda con `AlmacenSeguro`; el perfil (usuario, nombre, permisos) se guarda aparte para restaurar la sesión al reabrir la app.
+4. El plugin **Auth (Bearer)** de Ktor adjunta `Authorization: Bearer <token>` en cada petición.
+5. Un **401** fuera del login limpia la sesión y vuelve al Login con aviso; un **403** mantiene la sesión y muestra un mensaje distinto.
+
+### Componentes
+
+| Capa | Pieza | Archivo |
+|---|---|---|
+| domain | `Sesion` (`puede(permiso)`), `Credenciales` | `domain/model/Sesion.kt` |
+| domain | `AuthRepository` | `domain/repository/AuthRepository.kt` |
+| domain | `IniciarSesion`, `CerrarSesion`, `ObtenerSesion` | `domain/usecase/*UseCase.kt` |
+| domain | `AlmacenSeguro` (interfaz) | `domain/platform/AlmacenSeguro.kt` |
+| domain | `ErrorApi.NoAutenticado` (401), `ErrorApi.SinPermiso` (403) | `domain/error/ErrorApi.kt` |
+| data | `LoginRequestDto`, `LoginResponseDto` | `data/remote/dto/LoginDto.kt` |
+| data | `AuthApi`, `AuthRepositoryRest`, `EventosSesion` | `data/remote/`, `data/repository/` |
+| data | Cliente Ktor: Auth Bearer, Logging saneado, validador 401 | `data/remote/HttpClientFactory.kt` |
+| androidMain | `AlmacenSeguroAndroid` (Android Keystore + AES-GCM) | `platform/AlmacenSeguroAndroid.kt` |
+| iosMain | `AlmacenSeguroIos` (Keychain) | `platform/AlmacenSeguroIos.kt` |
+| presentation | `LoginViewModel`, `LoginScreen`, `SesionViewModel` | `presentation/login/` |
+
+### Configuración del cliente Ktor
+
+- `install(Auth) { bearer { loadTokens { ... }; sendWithoutRequest { ruta != auth/login } } }`: el token viaja desde la primera petición, salvo en el login.
+- `clearToken()` del proveedor Bearer tras guardar el token (login) y tras borrarlo (logout), porque Ktor cachea el valor cargado.
+- `install(Logging) { level = HEADERS; sanitizeHeader { Authorization } }`: en Logcat/Xcode aparece `Authorization: ***`.
+- `HttpResponseValidator`: un `401` fuera de `auth/login` notifica `EventosSesion.expirada`.
+
+### Permisos en la interfaz
+
+| Permiso | Efecto en la UI |
+|---|---|
+| `CATALOGO_ESCRIBIR` | Muestra el formulario de registro y las acciones editar/eliminar del inventario |
+| `CLIENTES_LEER` | Muestra la pestaña y el acceso rápido «Clientes» |
+| `VENTAS_LEER` | Muestra la pestaña y el acceso rápido «Pedidos» |
 
 ### Usuarios de prueba (PharmaSoft)
 
@@ -163,6 +194,35 @@ PharmaMobil se autentica contra PharmaSoft con JWT.
 
 Claves de desarrollo definidas en `V3__datos_iniciales_seguridad.sql` del backend.
 
-### Emulador
+### Verificación por rol (HTTP contra PharmaSoft)
 
-URL base `http://10.0.2.2:8080/` (tráfico en claro permitido en el manifiesto de desarrollo).
+| Operación | admin | vendedor | almacen |
+|---|---|---|---|
+| Listar productos | 200 | 200 | 200 |
+| Registrar producto | 201 | 403 | 409 (autorizado; nombre duplicado) |
+| Listar clientes | 200 | 200 | 403 |
+| Registrar venta (cuerpo vacío) | 400 (autorizado) | 400 (autorizado) | 403 |
+| Ver reportes | 200 | 403 | 403 |
+| `/auth/me` | 200 | 200 | 200 |
+
+Sin token: 401.
+
+### Cómo ejecutarlo
+
+1. **Backend:** PharmaSoft con Oracle Free 23ai en el puerto 1522 (contenedor `gvenzl/oracle-free`, usuario `PHARMADB`) y `./mvnw spring-boot:run` (puerto 8080).
+2. **Emulador Android:** la URL base es `http://10.0.2.2:8080/` (tráfico en claro permitido en el manifiesto de desarrollo). En un celular físico: `adb reverse tcp:8080 tcp:8080`.
+3. **App:** `./gradlew :androidApp:assembleDebug` e instalar el APK; iniciar sesión con un usuario de la tabla.
+
+### Pruebas
+
+```bash
+./gradlew testAndroidHostTest assembleDebug
+```
+
+Incluye `LoginViewModelTest` (login correcto, credenciales inválidas, campos vacíos, permisos de `Sesion`) y `AppModuleTest` (grafo de Koin con el almacén sustituido en JVM).
+
+### Evidencias y limitaciones
+
+- Informe y capturas: `docs/entrega/S10_Guia10_Autenticacion_RodriguezBazan.docx` y `docs/guia10/` (Android, PharmaSoft real).
+- **iOS:** `AlmacenSeguroIos` (Keychain) está implementado pero no se compiló ni probó, porque requiere un Mac con Xcode.
+- Los módulos de clientes, ventas y reportes no consumen aún el backend (clientes usa un repositorio en memoria).
