@@ -187,8 +187,9 @@ p("ACTIVIDAD AUTÓNOMA N.º 10", negrita=True, size=20, align=WD_ALIGN_PARAGRAPH
 p("VALIDACIÓN DE EXPIRACIÓN, ALMACENAMIENTO SEGURO Y CIERRE DE SESIÓN JWT EN PHARMAMOBIL",
   negrita=True, size=15, align=WD_ALIGN_PARAGRAPH.CENTER, after=50)
 for k, v in (("Estudiante", "Julio Fabián Rodríguez Bazán"),
+             ("Sesión", "10 · Sesión y token"),
              ("Repositorio Git", "https://github.com/fabianrodriguez33/Pharma-Mobil"),
-             ("Rama", "feature/auth-jwt-rodriguez"),
+             ("Rama entregada", "https://github.com/fabianrodriguez33/Pharma-Mobil/tree/feature/auth-jwt-rodriguez"),
              ("Fecha", "19/10/2026")):
     mixto((f"{k}: ", True), (v, False), after=3).alignment = WD_ALIGN_PARAGRAPH.CENTER
 salto()
@@ -231,7 +232,7 @@ ficha("1", "Token válido", "2026-10-13 00:11:27 (login) – 00:12:04 (consulta)
       "y el backend responde.",
       "200 OK (Logcat: RESPONSE 200; curl: 200)", "No aplica (respuesta correcta)",
       "El inventario se lista con formulario y acciones de edición (rol admin).",
-      "Con un token vigente el plugin Auth autentica la petición sin intervención del código de negocio.")
+      "Línea base: con un token vigente y un rol con permiso, el flujo completo (login, almacén, cabecera automática, respuesta) funciona sin código manual de autenticación.")
 figura("s1-token-valido.png", "Figura 1. Escenario 1: catálogo cargado con token válido", alto_cm=9.5)
 
 ficha("2", "Token expirado", "Backend con 1 min: login 2026-10-13 00:08:55; consulta 00:09:50 (+55 s). curl: 2026-10-12 23:57:47 (+75 s)",
@@ -239,7 +240,7 @@ ficha("2", "Token expirado", "Backend con 1 min: login 2026-10-13 00:08:55; cons
       "más de un minuto. 4) Abrir Inventario para forzar una consulta.",
       "401 Unauthorized (Logcat: RESPONSE 401)", "El token ha expirado. Inicie sesión nuevamente",
       "Vuelve a LoginScreen con «Tu sesión expiró. Inicia sesión nuevamente.».",
-      "El 401 fuera del login dispara cerrarSesion(): se borra el token y la guardia lleva a Login.")
+      "La expiración es un hecho temporal: el servidor lo detecta con la claim exp aunque la firma sea correcta. El cliente no puede saberlo de antemano (no valida la fecha), por eso la detección ocurre en la primera respuesta 401 y no al abrir la app.")
 figura("s2-token-expirado.png", "Figura 2. Escenario 2: sesión expirada, redirección a Login con aviso", alto_cm=9.5)
 
 ficha("3", "Token manipulado", "UI 2026-10-13 00:16:53; curl 00:18:07",
@@ -247,7 +248,7 @@ ficha("3", "Token manipulado", "UI 2026-10-13 00:16:53; curl 00:18:07",
       "almacén. 3) Abrir Inventario. 4) Revisar el archivo almacen_seguro.xml.",
       "401 Unauthorized", "El token no es válido",
       "Vuelve a LoginScreen con aviso; almacen_seguro.xml queda vacío (<map />).",
-      "Una firma alterada no valida; la app trata el 401 igual que una expiración y limpia el almacén.")
+      "Aquí falla la integridad, no el tiempo: el HMAC no coincide, el mensaje cambia a «no es válido» y el token jamás se podría reutilizar; por eso es indispensable limpiar el almacén y no reintentar con él.")
 figura("s3-token-manipulado.png", "Figura 3. Escenario 3: token manipulado, sesión cerrada", alto_cm=9.5)
 
 ficha("4", "Token ausente / sin sesión", "UI 2026-10-13 00:17:43; curl 00:18:08",
@@ -255,7 +256,7 @@ ficha("4", "Token ausente / sin sesión", "UI 2026-10-13 00:17:43; curl 00:18:08
       "sin cabecera Authorization.",
       "401 Unauthorized", "Debe iniciar sesión para acceder a este recurso",
       "Vuelve a LoginScreen con aviso.",
-      "Sin token la ruta protegida rechaza la petición y la app regresa a Login.")
+      "Es un fallo de credencial, no de token: el filtro ni siquiera intenta validar nada y responde con el mensaje genérico de autenticación requerida; muestra que la guardia de la UI y la del servidor son independientes y se refuerzan.")
 figura("s4-token-ausente.png", "Figura 4. Escenario 4: petición sin token, redirección a Login", alto_cm=9.5)
 
 ficha("5", "Prefijo incorrecto o mal formado", "curl 2026-10-13 00:18:08",
@@ -263,7 +264,7 @@ ficha("5", "Prefijo incorrecto o mal formado", "curl 2026-10-13 00:18:08",
       "sin prefijo y el esquema Basic.",
       "401 Unauthorized (las cuatro variantes)", "Debe iniciar sesión para acceder a este recurso",
       "No se reproduce en la UI: el plugin Auth siempre envía «Bearer »; la prueba es a nivel HTTP.",
-      "El backend solo acepta el esquema Bearer exacto; el cliente Ktor garantiza el prefijo correcto.")
+      "El filtro solo reconoce el esquema «Bearer » exacto; cualquier variante equivale a no enviar credencial. Delegar la cabecera al plugin Auth evita este error de raíz, que sí es frecuente al escribirla a mano.")
 figura("curl-bitacora.png", "Figura 5. Escenarios 5 y 6: salida de curl contra PharmaSoft (bitácora y matriz)", ancho_cm=15.5)
 
 ficha("6a", "Acción sin permiso (403)", "UI 2026-10-13 00:20:28; curl con vendedor 00:18:11",
@@ -271,7 +272,7 @@ ficha("6a", "Acción sin permiso (403)", "UI 2026-10-13 00:20:28; curl con vende
       "3) Con una sesión de almacen abierta se le cambió el rol a VENDEDOR en la base y se intentó registrar un producto.",
       "403 Forbidden", "No tiene permisos para realizar esta operación",
       "La sesión sigue activa; se muestra «No tienes permiso para realizar esta acción» sobre la misma pantalla.",
-      "El 403 no cierra sesión: la guardia solo reacciona al 401.")
+      "Autenticado no es autorizado: el 403 indica que la identidad es válida pero el permiso no alcanza, por eso la sesión se conserva; cerrarla castigaría al usuario por un error de permisos y la UI ya debería haber ocultado la acción.")
 fila_figuras([("s6b-vendedor-sin-formulario.png", "Figura 6a. vendedor: inventario sin formulario ni acciones"),
               ("s6a-403-sesion-activa.png", "Figura 6b. 403 con la sesión abierta")], alto_cm=9.0)
 
@@ -280,7 +281,7 @@ ficha("6b", "Usuario deshabilitado", "UI 2026-10-13 00:20:43; curl 00:20:43",
       "4) Se restauró estado = 1.",
       "401 Unauthorized", "El usuario está deshabilitado",
       "Vuelve a LoginScreen con aviso.",
-      "El backend revalida el usuario en cada petición; un token vigente deja de servir al deshabilitarlo.")
+      "El JWT no es suficiente por sí solo: el backend consulta el estado del usuario en cada petición, de modo que un administrador puede revocar el acceso al instante sin esperar a que el token expire.")
 figura("s6c-usuario-deshabilitado.png", "Figura 7. Escenario 6b: usuario deshabilitado, sesión cerrada", alto_cm=9.5)
 
 # ------------------------------------------------------------------ 3 Producto 2
