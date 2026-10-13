@@ -13,6 +13,12 @@ import pe.edu.upeu.pharmamobil.data.remote.dto.ErrorResponseDto
 sealed interface ErrorApi {
     data class Validacion(val porCampo: Map<String, String>) : ErrorApi
     data object NoEncontrado : ErrorApi
+
+    /** 401: token ausente/vencido o credenciales invalidas. */
+    data object NoAutenticado : ErrorApi
+
+    /** 403: autenticado pero sin el permiso requerido. */
+    data object SinPermiso : ErrorApi
     data class Conflicto(val mensaje: String) : ErrorApi
     data object Servidor : ErrorApi
     data object SinConexion : ErrorApi
@@ -34,6 +40,8 @@ suspend fun Throwable.toErrorApi(): ErrorApi {
             val cuerpo = runCatching { response.body<ErrorResponseDto>() }.getOrNull()
             when (status) {
                 400 -> ErrorApi.Validacion(cuerpo?.validationErrors.orEmpty())
+                401 -> ErrorApi.NoAutenticado
+                403 -> ErrorApi.SinPermiso
                 404 -> ErrorApi.NoEncontrado
                 409 -> ErrorApi.Conflicto(cuerpo?.message ?: "Operación no permitida")
                 else -> ErrorApi.Desconocido(cuerpo?.message ?: "Error cliente HTTP $status")

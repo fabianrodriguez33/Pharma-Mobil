@@ -8,6 +8,10 @@ import kotlinx.coroutines.test.setMain
 import org.koin.core.Koin
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.dsl.module
+import pe.edu.upeu.pharmamobil.domain.platform.AlmacenSeguro
+import pe.edu.upeu.pharmamobil.domain.repository.AuthRepository
+import pe.edu.upeu.pharmamobil.data.repository.AuthRepositoryRest
 import pe.edu.upeu.pharmamobil.data.repository.ClienteRepositorioEnMemoria
 import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositoryRest
 import pe.edu.upeu.pharmamobil.domain.repository.ClienteRepository
@@ -48,8 +52,23 @@ class AppModuleTest {
     }
 
     private fun grafoCompleto(): Koin = startKoin {
-        modules(dataModule, domainModule, presentationModule, networkModule, platformModule)
+        modules(dataModule, domainModule, presentationModule, networkModule, platformModule, almacenDePrueba)
     }.koin
+
+    /** El Keystore real necesita un Context de Android; en JVM se sustituye por memoria. */
+    private val almacenDePrueba = module {
+        single<AlmacenSeguro> {
+            object : AlmacenSeguro {
+                var token: String? = null
+                var perfil: String? = null
+                override fun guardarToken(token: String) { this.token = token }
+                override fun leerToken() = token
+                override fun guardarPerfil(json: String) { perfil = json }
+                override fun leerPerfil() = perfil
+                override fun borrarToken() { token = null; perfil = null }
+            }
+        }
+    }
 
     @Test
     fun resuelveLosRepositoriosPorSuInterfazDeDominio() {
@@ -58,6 +77,7 @@ class AppModuleTest {
 
         assertIs<ProductoRepositoryRest>(koin.get<ProductoRepository>())
         assertIs<ClienteRepositorioEnMemoria>(koin.get<ClienteRepository>())
+        assertIs<AuthRepositoryRest>(koin.get<AuthRepository>())
     }
 
     @Test

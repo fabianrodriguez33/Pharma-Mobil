@@ -41,7 +41,9 @@ import pe.edu.upeu.pharmamobil.presentation.components.ValidatedTextField
 @Composable
 fun ProductoScreen(
     viewModel: ProductoViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** CATALOGO_ESCRIBIR: sin el, el formulario y las acciones de edicion se ocultan. */
+    puedeEscribir: Boolean = true
 ) {
 
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -53,15 +55,17 @@ fun ProductoScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
-        FormularioProductoCard(
-            formulario = uiState.formulario,
-            operacion = uiState.operacion,
-            onNombreChange = viewModel::onNombreChange,
-            onPrecioChange = viewModel::onPrecioChange,
-            onStockChange = viewModel::onStockChange,
-            onGuardar = viewModel::guardar,
-            onCancelar = viewModel::cancelarEdicion
-        )
+        if (puedeEscribir) {
+            FormularioProductoCard(
+                formulario = uiState.formulario,
+                operacion = uiState.operacion,
+                onNombreChange = viewModel::onNombreChange,
+                onPrecioChange = viewModel::onPrecioChange,
+                onStockChange = viewModel::onStockChange,
+                onGuardar = viewModel::guardar,
+                onCancelar = viewModel::cancelarEdicion
+            )
+        }
 
         (uiState.operacion as? ProductoUiState.Operacion.Fallida)?.let {
             Text(
@@ -120,6 +124,7 @@ fun ProductoScreen(
                             ProductoItem(
                                 producto = producto,
                                 habilitado = !uiState.ocupado,
+                                puedeEscribir = puedeEscribir,
                                 onEditar = { viewModel.editar(producto) },
                                 onEliminar = { viewModel.eliminar(producto.id) }
                             )
@@ -270,6 +275,7 @@ private fun EncabezadoInventario(
 private fun ProductoItem(
     producto: ProductoUi,
     habilitado: Boolean,
+    puedeEscribir: Boolean,
     onEditar: () -> Unit,
     onEliminar: () -> Unit
 ) {
@@ -334,16 +340,18 @@ private fun ProductoItem(
                 }
             }
 
-            IconButton(onClick = onEditar, enabled = habilitado) {
-                Icon(Icons.Default.Edit, contentDescription = "Editar ${producto.nombre}")
-            }
+            if (puedeEscribir) {
+                IconButton(onClick = onEditar, enabled = habilitado) {
+                    Icon(Icons.Default.Edit, contentDescription = "Editar ${producto.nombre}")
+                }
 
-            IconButton(onClick = onEliminar, enabled = habilitado) {
-                Icon(
-                    Icons.Default.Delete,
-                    contentDescription = "Eliminar ${producto.nombre}",
-                    tint = MaterialTheme.colorScheme.error
-                )
+                IconButton(onClick = onEliminar, enabled = habilitado) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Eliminar ${producto.nombre}",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }

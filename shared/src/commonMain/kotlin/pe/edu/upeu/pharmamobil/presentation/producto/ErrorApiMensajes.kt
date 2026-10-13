@@ -7,6 +7,8 @@ import pe.edu.upeu.pharmamobil.domain.error.ErrorApiException
 fun ErrorApi.mensaje(): String = when (this) {
     is ErrorApi.Validacion -> "Revisa los datos del formulario"
     ErrorApi.NoEncontrado -> "El producto ya no existe"
+    ErrorApi.NoAutenticado -> "Tu sesión expiró o las credenciales no son válidas"
+    ErrorApi.SinPermiso -> "No tienes permiso para realizar esta acción"
     is ErrorApi.Conflicto -> mensaje
     ErrorApi.Servidor -> "El servidor no está disponible. Inténtalo más tarde"
     ErrorApi.SinConexion -> "Sin conexión con el servidor"

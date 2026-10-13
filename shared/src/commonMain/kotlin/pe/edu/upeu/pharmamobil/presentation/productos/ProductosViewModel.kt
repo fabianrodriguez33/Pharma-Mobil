@@ -11,6 +11,7 @@ import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobil.platform.formatearSoles
+import pe.edu.upeu.pharmamobil.presentation.producto.mensajeLegible
 
 class ProductosViewModel(
     private val repository: ProductoRepository,
@@ -42,7 +43,7 @@ class ProductosViewModel(
             throw e
         } catch (e: Exception) {
             _estado.value = ProductosUiState.Error(
-                e.message ?: "Error al conectar con el servidor"
+                e.mensajeLegible("Error al conectar con el servidor")
             )
         }
     }

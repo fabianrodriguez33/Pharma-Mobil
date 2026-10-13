@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory2
@@ -51,7 +52,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.KoinContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
+import pe.edu.upeu.pharmamobil.domain.model.Sesion
+import pe.edu.upeu.pharmamobil.presentation.login.LoginScreen
+import pe.edu.upeu.pharmamobil.presentation.login.LoginViewModel
+import pe.edu.upeu.pharmamobil.presentation.login.SesionViewModel
 
 import pe.edu.upeu.pharmamobil.navigation.Screen
 import pe.edu.upeu.pharmamobil.presentation.cliente.ClienteScreen
@@ -101,12 +107,24 @@ fun App() = KoinContext {
         mutableStateOf(false)
     }
 
+    val sesionViewModel: SesionViewModel = koinViewModel()
+    val sesionActual by sesionViewModel.sesion.collectAsStateWithLifecycle()
+    val avisoExpirada by sesionViewModel.avisoExpirada.collectAsStateWithLifecycle()
+
     PharmaMobilTheme(
         darkTheme = darkTheme
     ) {
 
         FondoAurora {
-        Scaffold(
+        val sesion = sesionActual
+        if (sesion == null) {
+            // Guardia: sin sesion (arranque en frio, logout o 401) solo se ve Login.
+            val loginViewModel: LoginViewModel = koinViewModel()
+            LoginScreen(
+                viewModel = loginViewModel,
+                aviso = if (avisoExpirada) "Tu sesión expiró. Inicia sesión nuevamente." else null
+            )
+        } else Scaffold(
 
             containerColor = Color.Transparent,
             contentColor = MaterialTheme.colorScheme.onBackground,
@@ -131,6 +149,12 @@ fun App() = KoinContext {
                         }
                     },
                     actions = {
+                        IconButton(onClick = sesionViewModel::salir) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Logout,
+                                contentDescription = "Cerrar sesión de ${sesion.usuario}"
+                            )
+                        }
                         IconButton(
                             onClick = { darkTheme = !darkTheme }
                         ) {
@@ -193,15 +217,16 @@ fun App() = KoinContext {
 
                     Screen.Productos ->
                         ProductoScreen(
-                            viewModel = koinViewModel()
+                            viewModel = koinViewModel(key = sesion.token),
+                            puedeEscribir = sesion.puede(Sesion.CATALOGO_ESCRIBIR)
                         )
 
                     Screen.Catalogo ->
-                        ProductosScreen()
+                        ProductosScreen(viewModel = koinViewModel(key = sesion.token))
 
                     Screen.Clientes ->
                         ClienteScreen(
-                            viewModel = koinViewModel()
+                            viewModel = koinViewModel(key = sesion.token)
                         )
 
                     Screen.Pedidos ->
