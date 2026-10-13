@@ -1,15 +1,19 @@
-# Extracto de Logcat (filtro: System.out) con Ktor Logging nivel HEADERS.
+# Extracto de Logcat (filtro: System.out) contra PharmaSoft real, Ktor Logging nivel HEADERS.
 # La cabecera Authorization sale saneada (***); el token nunca se imprime.
 HttpClient: REQUEST: http://10.0.2.2:8080/api/v1/productos?pagina=0&tamanio=20
 -> Accept: application/json
 -> Authorization: ***
 -> Content-Type: application/json
-HttpClient: RESPONSE: 200 OK
+HttpClient: RESPONSE: 200
 
 HttpClient: REQUEST: http://10.0.2.2:8080/api/v1/productos
 -> Accept: application/json
 -> Authorization: ***
-HttpClient: RESPONSE: 403 Forbidden
+-> Content-Type: application/json
+HttpClient: RESPONSE: 403
 
 HttpClient: REQUEST: http://10.0.2.2:8080/api/v1/productos?pagina=0&tamanio=20
-HttpClient: RESPONSE: 401 Unauthorized
+-> Accept: application/json
+-> Authorization: ***
+-> Content-Type: application/json
+HttpClient: RESPONSE: 401

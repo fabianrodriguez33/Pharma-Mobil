@@ -4,11 +4,8 @@
 **Rama:** `feature/auth-jwt-rodriguez`
 **Proyecto:** PharmaMobil (KMP + Ktor) consumiendo PharmaSoft
 
-> **Alcance de las capturas.** Las capturas de este informe se tomaron en un emulador Android (Pixel 8)
-> contra un **servidor simulado** (`servidor_simulado.py`) que reproduce el contrato de PharmaSoft
-> (`POST /api/v1/auth/login`, `GET/POST /api/v1/productos`, respuestas 200/401/403 y los permisos de los tres
-> usuarios de prueba). **No son capturas contra PharmaSoft real**, porque su base Oracle no estaba disponible
-> en el equipo (ver «Pendientes»). Deben repetirse contra el backend real antes de entregar.
+> **Alcance.** Capturas tomadas en un emulador Android (Pixel 8) contra **PharmaSoft real**
+> (Spring Boot + Oracle Free 23ai en Docker, puerto 1522). iOS no se pudo verificar (requiere Mac).
 
 ## 1. Implementación
 
@@ -36,45 +33,55 @@ Decisiones relevantes:
 - **401** fuera de login: se limpia la sesión y se vuelve al Login con aviso. **403:** se mantiene la sesión y se muestra un mensaje distinto.
 - **Permisos en UI:** `CATALOGO_ESCRIBIR` (formulario, editar, eliminar), `CLIENTES_LEER` (Clientes), `VENTAS_LEER` (Pedidos), tanto en la barra inferior como en los accesos rápidos del inicio.
 
-## 2. Evidencias (Android, servidor simulado)
+## 2. Evidencias (Android, PharmaSoft real)
 
 | # | Captura | Qué demuestra |
 |---|---|---|
 | 1 | `01-login.png` | Pantalla de login al arrancar sin sesión (guardia de navegación) |
-| 2 | `02-admin-inventario.png` | Login de `admin` correcto |
+| 2 | `02-admin-inicio.png` | Login de `admin` correcto contra `POST /api/v1/auth/login` |
 | 3 | `03-admin-inventario.png` | `admin`: CRUD completo (formulario, editar, eliminar) |
 | 4 | `04-sesion-restaurada.png` | Tras cerrar y reabrir la app, entra sin pedir login |
 | 5 | `05-vendedor-inicio.png` | `vendedor`: ve Clientes y Pedidos |
 | 6 | `06-vendedor-inventario.png` | `vendedor`: inventario de solo lectura (sin formulario ni acciones) |
 | 7 | `07-almacen-inicio.png` | `almacen`: sin Clientes ni Pedidos |
 | 8 | `08-almacen-inventario.png` | `almacen`: formulario y acciones visibles |
-| 9 | `09-almacen-403.png` | **403** provocado: «No tienes permiso para realizar esta acción», la sesión sigue abierta |
-| 10 | `10-sesion-expirada.png` | **401**: vuelve al login con «Tu sesión expiró» |
+| 9 | `09-almacen-403.png` | **403** real: «No tienes permiso para realizar esta acción», la sesión sigue abierta |
+| 10 | `10-sesion-expirada.png` | **401** real: vuelve al login con «Tu sesión expiró» |
 | – | `log-authorization.txt` | Registro con `Authorization: ***` (saneada) |
 
-El 403 se provocó haciendo que el servidor simulado rechazara la escritura (la UI ya oculta el formulario a quien no tiene permiso).
-El 401 se provocó invalidando el token en el servidor simulado.
+Cómo se provocaron 403 y 401 con el backend real: con la sesión de `almacen` abierta se le cambió el rol a
+`VENDEDOR` en la base (la UI aún mostraba el formulario) y se intentó registrar un producto → 403.
+Luego se deshabilitó el usuario en la base y al recargar el inventario el backend respondió 401. Los datos
+de prueba se restauraron después.
 
-## 3. Lista de cotejo
+## 3. Matriz por rol (HTTP contra PharmaSoft)
+
+| Operación | admin | vendedor | almacen |
+|---|---|---|---|
+| Listar productos | 200 | 200 | 200 |
+| Registrar producto | 201 | 403 | 409 (autorizado; nombre duplicado) |
+| Listar clientes | 200 | 200 | 403 |
+| Registrar venta (cuerpo vacío) | 400 (autorizado) | 400 (autorizado) | 403 |
+| Ver reportes | 200 | 403 | 403 |
+| `/auth/me` | 200 | 200 | 200 |
+| Sin token | 401 | | |
+
+## 4. Lista de cotejo
 
 | N.º | Criterio | Estado |
 |---|---|---|
-| 1 | Login contra `POST /api/v1/auth/login` | Verificado contra servidor simulado; **pendiente contra PharmaSoft** |
+| 1 | Login contra `POST /api/v1/auth/login` | Cumple (verificado) |
 | 2 | Token en `AlmacenSeguro` por plataforma | Android verificado; iOS implementado, **sin compilar** |
-| 3 | Plugin Auth adjunta la cabecera | Verificado (peticiones llegan con `Bearer`) |
-| 4 | `sendWithoutRequest` | Verificado: login sin cabecera, resto con cabecera desde la primera llamada |
-| 5 | Registro con cabecera saneada | Verificado (`log-authorization.txt`) |
-| 6 | Sesión sobrevive al reinicio | Verificado (captura 4) |
-| 7 | 401 → login con aviso | Verificado (captura 10) |
-| 8 | 403 mantiene sesión, mensaje distinto | Verificado (captura 9) |
-| 9 | UI oculta acciones por permisos | Verificado con los tres roles (capturas 3, 6, 7, 8) |
-| 10 | Android e iOS | Android verificado; **iOS pendiente** (requiere Mac/Xcode) |
+| 3 | Plugin Auth adjunta la cabecera | Cumple |
+| 4 | `sendWithoutRequest` | Cumple: login sin cabecera, resto con cabecera desde la primera llamada |
+| 5 | Registro con cabecera saneada | Cumple (`log-authorization.txt`) |
+| 6 | Sesión sobrevive al reinicio | Cumple (captura 4) |
+| 7 | 401 → login con aviso | Cumple (captura 10) |
+| 8 | 403 mantiene sesión, mensaje distinto | Cumple (captura 9) |
+| 9 | UI oculta acciones por permisos | Cumple con los tres roles |
+| 10 | Android e iOS | Android verificado; **iOS pendiente** |
 
-## 4. Pendientes
+## 5. Pendientes
 
-1. **PharmaSoft real:** el backend espera Oracle en `localhost:1522/FREEPDB1`. En este equipo solo hay Oracle XE
-   (puerto 1521) y su listener tiene configurado un nombre de host obsoleto (`DESKTOP-OCAL5F1`), por lo que no acepta
-   conexiones TCP. Hay que corregir `listener.ora` (o usar Oracle Free/Docker) y repetir la matriz de la sección 6 con
-   `admin`, `vendedor` y `almacen`, y rehacer las capturas 2–10.
-2. **iOS:** compilar y capturar en un Mac.
-3. **Operaciones no implementadas en la app:** clientes (repositorio en memoria), ventas, reportes y `/auth/me`.
+1. **iOS:** compilar y capturar en un Mac con Xcode (Keychain sin verificar).
+2. **No implementado en la app:** clientes reales (hoy repositorio en memoria), ventas, reportes y `/auth/me`.
