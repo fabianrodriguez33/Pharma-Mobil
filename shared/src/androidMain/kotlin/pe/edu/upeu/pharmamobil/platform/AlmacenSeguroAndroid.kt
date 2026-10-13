@@ -5,6 +5,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import java.security.KeyStore
+import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -14,7 +15,7 @@ import pe.edu.upeu.pharmamobil.domain.platform.AlmacenSeguro
 /** Cifra con AES-GCM usando una clave del Android Keystore; el texto cifrado va a SharedPreferences. */
 class AlmacenSeguroAndroid(contexto: Context) : AlmacenSeguro {
 
-    private val prefs = contexto.getSharedPreferences("pharmamobil_seguro", Context.MODE_PRIVATE)
+    private val prefs = contexto.getSharedPreferences("almacen_seguro", Context.MODE_PRIVATE)
 
     override fun guardarToken(token: String) = guardar(CLAVE_TOKEN, token)
     override fun leerToken(): String? = leer(CLAVE_TOKEN)
@@ -22,17 +23,21 @@ class AlmacenSeguroAndroid(contexto: Context) : AlmacenSeguro {
     override fun leerPerfil(): String? = leer(CLAVE_PERFIL)
 
     override fun borrarToken() {
-        prefs.edit().remove(CLAVE_TOKEN).remove(CLAVE_PERFIL).apply()
+        prefs.edit().remove(id(CLAVE_TOKEN)).remove(id(CLAVE_PERFIL)).apply()
     }
+
+    /** Los nombres de clave tambien se ofuscan (SHA-256): el XML no revela que hay un "token". */
+    private fun id(clave: String): String =
+        MessageDigest.getInstance("SHA-256").digest(clave.toByteArray()).joinToString("") { "%02x".format(it) }
 
     private fun guardar(clave: String, valor: String) {
         val cifrado = Cipher.getInstance(TRANSFORMACION).apply { init(Cipher.ENCRYPT_MODE, claveSecreta()) }
         val bytes = cifrado.iv + cifrado.doFinal(valor.toByteArray(Charsets.UTF_8))
-        prefs.edit().putString(clave, Base64.encodeToString(bytes, Base64.NO_WRAP)).apply()
+        prefs.edit().putString(id(clave), Base64.encodeToString(bytes, Base64.NO_WRAP)).apply()
     }
 
     private fun leer(clave: String): String? {
-        val guardado = prefs.getString(clave, null) ?: return null
+        val guardado = prefs.getString(id(clave), null) ?: return null
         return try {
             val bytes = Base64.decode(guardado, Base64.NO_WRAP)
             val cifrado = Cipher.getInstance(TRANSFORMACION).apply {
