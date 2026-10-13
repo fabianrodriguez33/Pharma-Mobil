@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import pe.edu.upeu.pharmamobil.domain.model.Sesion
 import pe.edu.upeu.pharmamobil.navigation.Screen
 import org.jetbrains.compose.resources.painterResource
 import pe.edu.upeu.pharmamobil.theme.TarjetaVidrio
@@ -38,7 +39,8 @@ private data class Opcion(
     val screen: Screen,
     val icono: ImageVector,
     val titulo: String,
-    val descripcion: String
+    val descripcion: String,
+    val permiso: String? = null
 )
 
 private val OPCIONES = listOf(
@@ -58,20 +60,24 @@ private val OPCIONES = listOf(
         screen = Screen.Clientes,
         icono = Icons.Default.Person,
         titulo = "Clientes",
-        descripcion = "Datos de contacto."
+        descripcion = "Datos de contacto.",
+        permiso = Sesion.CLIENTES_LEER
     ),
     Opcion(
         screen = Screen.Pedidos,
         icono = Icons.Default.ShoppingCart,
         titulo = "Pedidos",
-        descripcion = "Próximamente."
+        descripcion = "Próximamente.",
+        permiso = Sesion.VENTAS_LEER
     )
 )
 
 @Composable
 fun InicioScreen(
     onNavegar: (Screen) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    /** Decide si la sesion actual tiene un permiso; las opciones sin permiso se ocultan. */
+    puede: (String) -> Boolean = { true }
 ) {
 
     Column(
@@ -90,7 +96,7 @@ fun InicioScreen(
             modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
         )
 
-        OPCIONES.chunked(2).forEach { fila ->
+        OPCIONES.filter { it.permiso == null || puede(it.permiso) }.chunked(2).forEach { fila ->
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -108,6 +114,10 @@ fun InicioScreen(
                         },
                         modifier = Modifier.weight(1f)
                     )
+                }
+
+                if (fila.size == 1) {
+                    androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
                 }
             }
         }

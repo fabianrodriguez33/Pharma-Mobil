@@ -220,7 +220,8 @@ fun App() = KoinContext {
                         InicioScreen(
                             onNavegar = { destino ->
                                 pantallaActual = destino
-                            }
+                            },
+                            puede = sesion::puede
                         )
 
                     Screen.Productos ->

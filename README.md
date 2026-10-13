@@ -155,13 +155,13 @@ PharmaMobil se autentica contra PharmaSoft con JWT.
 
 ### Usuarios de prueba (PharmaSoft)
 
-| Usuario | Rol | Permisos |
-|---|---|---|
-| `admin` | ADMIN | todos |
-| `vendedor` | VENDEDOR | `CATALOGO_LEER`, `CLIENTES_LEER`, `CLIENTES_ESCRIBIR`, `VENTAS_LEER`, `VENTAS_REGISTRAR` |
-| `almacen` | ALMACENERO | `CATALOGO_LEER`, `CATALOGO_ESCRIBIR` |
+| Usuario | Clave | Rol | Permisos |
+|---|---|---|---|
+| `admin` | `Admin123` | ADMIN | todos |
+| `vendedor` | `Vendedor123` | VENDEDOR | `CATALOGO_LEER`, `CLIENTES_LEER`, `CLIENTES_ESCRIBIR`, `VENTAS_LEER`, `VENTAS_REGISTRAR` |
+| `almacen` | `Almacen123` | ALMACENERO | `CATALOGO_LEER`, `CATALOGO_ESCRIBIR` |
 
-Las contraseñas están en `V3__datos_iniciales_seguridad.sql` del backend.
+Claves de desarrollo definidas en `V3__datos_iniciales_seguridad.sql` del backend.
 
 ### Emulador
 
