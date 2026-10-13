@@ -1,0 +1,25 @@
+== S1 token valido 2026-10-12 23:56:32
+GET /productos con token recien emitido: 200
+== S2 token expirado (app.jwt.expiracion-minutos=1) 2026-10-12 23:57:47
+GET /productos 75 s despues del login: 401 | El token ha expirado. Inicie sesión nuevamente
+== S3 token manipulado 2026-10-13 00:18:07
+401 | El token no es válido
+== S4 sin cabecera 2026-10-13 00:18:08
+401 | Debe iniciar sesión para acceder a este recurso
+== S5 prefijo incorrecto 2026-10-13 00:18:08
+bearer minuscula: 401 | Debe iniciar sesión para acceder a este recurso
+'Bearer' sin token: 401 | Debe iniciar sesión para acceder a este recurso
+sin prefijo: 401 | Debe iniciar sesión para acceder a este recurso
+Basic: 401 | Debe iniciar sesión para acceder a este recurso
+== S6b vendedor sin permiso 2026-10-13 00:18:11
+POST producto vendedor: 403 | No tiene permisos para realizar esta operación
+DELETE producto vendedor: 403 | No tiene permisos para realizar esta operación
+== Matriz 2026-10-13 00:18:12
+Listar productos: admin=200 vendedor=200 almacen=200
+Registrar productos: admin=201 vendedor=403 almacen=409
+Listar clientes: admin=200 vendedor=200 almacen=403
+Registrar venta (cuerpo vacio): admin=400 vendedor=400 almacen=403
+Ver reportes: admin=200 vendedor=403 almacen=403
+Consultar /auth/me: admin=200 vendedor=200 almacen=200
+almacen registrar (nombre distinto): 201
+curl con token previo: {"timestamp":"2026-10-13T00:20:43.404342500","status":401,"error":"Unauthorized","message":"El usuario está deshabilitado","path":"/api/v1/productos","validationErrors":null} 401

@@ -1,0 +1,13 @@
+HttpClient: REQUEST: http://10.0.2.2:8080/api/v1/productos?pagina=0&tamanio=20
+METHOD: GET
+COMMON HEADERS
+-> Accept: application/json
+-> Authorization: ***
+-> Content-Type: application/json
+CONTENT HEADERS
+-> Content-Length: 0
+HttpClient: RESPONSE: 200 
+METHOD: GET
+FROM: http://10.0.2.2:8080/api/v1/productos?pagina=0&tamanio=20
+COMMON HEADERS
+-> content-type: application/json

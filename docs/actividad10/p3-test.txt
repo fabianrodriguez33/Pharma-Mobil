@@ -1,0 +1,9 @@
+$ ./gradlew testAndroidHostTest assembleDebug
+PASSED  CerrarSesionTest.cerrarSesionAplicaLosCuatroEfectos
+PASSED  LoginViewModelTest.loginCorrectoTerminaEnExitoYLimpiaLaClave
+PASSED  LoginViewModelTest.credencialesInvalidasMuestranMensajeEspecifico
+PASSED  LoginViewModelTest.camposVaciosNoLlamanAlRepositorio
+PASSED  LoginViewModelTest.sesionPuedeSoloConPermisosConcedidos
+
+Pruebas ejecutadas: 66   fallidas: 0
+BUILD SUCCESSFUL

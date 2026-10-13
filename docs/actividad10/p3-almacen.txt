@@ -1,0 +1,9 @@
+--- ANTES de cerrarSesion (2026-10-13 00:21:53)
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="b6fcc69f7bd0d90a454bc88b922168f4473c10cfc713978dec404fbb90fbe25a">nLMxiii/+QFcwCv0GKcOB61kNl
+    <string name="3c469e9d6c5875d37a43f353d4f88e61fcf812c66eee3457465a40b0da4153e0">Gj46ZIfEx4vkKF/dKRAfNgAmB0
+</map>
+--- DESPUES de cerrarSesion (2026-10-13 00:22:04)
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map />

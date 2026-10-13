@@ -226,3 +226,21 @@ Incluye `LoginViewModelTest` (login correcto, credenciales inválidas, campos va
 - Informe y capturas: `docs/entrega/S10_Guia10_Autenticacion_RodriguezBazan.docx` y `docs/guia10/` (Android, PharmaSoft real).
 - **iOS:** `AlmacenSeguroIos` (Keychain) está implementado pero no se compiló ni probó, porque requiere un Mac con Xcode.
 - Los módulos de clientes, ventas y reportes no consumen aún el backend (clientes usa un repositorio en memoria).
+
+## Seguridad y Gestión de Tokens JWT
+
+### AlmacenSeguro
+- Interfaz en `commonMain` (`guardarToken`, `leerToken`, `borrarToken`, más `guardarPerfil`/`leerPerfil`); una implementación por plataforma inyectada con Koin.
+- **Android:** AES-256 en modo GCM con una clave del Android Keystore (alias `pharmamobil_token_key`, no exportable). El IV (12 bytes) se antepone al texto cifrado y el Base64 resultante se guarda en `shared_prefs/almacen_seguro.xml`; los nombres de clave se ofuscan con SHA-256, de modo que el archivo no revela el token ni el perfil. Si la clave se invalida o el dato se corrompe, se descarta y se pide un nuevo login.
+- **iOS:** Keychain (`kSecClassGenericPassword`, accesible tras el primer desbloqueo, solo en este dispositivo). Implementado; pendiente de compilar en un Mac.
+
+### Saneamiento de logs
+`Logging` en nivel `HEADERS` con `sanitizeHeader { Authorization }`: en Logcat/Xcode aparece `Authorization: ***` y el token nunca se imprime.
+
+### Guardia de navegación y cierre de sesión
+- `App` observa `SesionViewModel.sesion`: sin sesión solo se muestra `LoginScreen`.
+- Un **401** fuera de `auth/login` (token expirado, manipulado, ausente o usuario deshabilitado) llama a `cerrarSesion()` y vuelve al Login con aviso. Un **403** mantiene la sesión.
+- `cerrarSesion()` aplica cuatro efectos: borra el token del almacén, deja `Sesion` en `null`, redirige a Login e invalida la caché del plugin Auth con `authProvider<BearerAuthProvider>()?.clearToken()`. Los cuatro están cubiertos por `CerrarSesionTest`.
+
+### Verificación (Actividad Autónoma 10)
+Bitácora de los 6 escenarios de token, evidencia del almacenamiento seguro, cierre de sesión y matriz por rol en `docs/entrega/S10_ActividadAutonoma_RodriguezBazan.docx` (capturas y script generador en `docs/actividad10/`).
