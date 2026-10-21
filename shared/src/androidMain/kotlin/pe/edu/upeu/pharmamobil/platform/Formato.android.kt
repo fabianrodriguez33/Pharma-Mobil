@@ -11,3 +11,6 @@ actual fun formatearSoles(valor: Double): String {
         "S/ ${String.format(Locale.US, "%.2f", valor)}"
     }
 }
+
+actual fun formatearEpoch(epochMillis: Long, patron: String): String =
+    java.text.SimpleDateFormat(patron, Locale("es", "PE")).format(java.util.Date(epochMillis))

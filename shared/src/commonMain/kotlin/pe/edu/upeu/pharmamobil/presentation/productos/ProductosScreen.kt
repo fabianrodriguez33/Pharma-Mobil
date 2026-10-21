@@ -65,7 +65,7 @@ fun ProductosScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    CatalogoGrid(e.productos, e.avisoRed, viewModel::compartir)
+                    CatalogoGrid(e, viewModel::sincronizar, viewModel::compartir)
                 }
 
             is ProductosUiState.Error ->
@@ -86,7 +86,9 @@ fun ProductosScreen(
 }
 
 @Composable
-private fun CatalogoGrid(productos: List<ProductoItemUi>, avisoRed: String?, onCompartir: (Long) -> Unit) {
+private fun CatalogoGrid(estado: ProductosUiState.Success, onSincronizar: () -> Unit, onCompartir: (Long) -> Unit) {
+    val productos = estado.productos
+    val avisoRed = estado.avisoRed
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         modifier = Modifier.fillMaxSize(),
@@ -112,6 +114,20 @@ private fun CatalogoGrid(productos: List<ProductoItemUi>, avisoRed: String?, onC
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = estado.ultimaSincronizacion,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    TextButton(onClick = onSincronizar, enabled = !estado.sincronizando) {
+                        Text(if (estado.sincronizando) "Sincronizando…" else "Sincronizar")
+                    }
                 }
                 AcercaDelDispositivo()
             }

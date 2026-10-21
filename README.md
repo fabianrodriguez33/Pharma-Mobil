@@ -254,7 +254,11 @@ La base SQLite local (`pharma.db`, gestionada con SQLDelight) es la única fuent
 - **Capa local:** `ProductoLocal` expone `observar(): Flow<List<Producto>>`; no importa Ktor ni DTOs.
 - **Repositorio:** `ProductoRepositorioOffline`. `registrar()` guarda con id local negativo y `pendiente = 1`; `sincronizar()` **sube primero los pendientes** y luego descarga y reemplaza los sincronizados dentro de una transacción.
 - **Pantallas:** `ProductosViewModel` y `ProductoViewModel` recogen el `Flow` de la base y no recargan la lista a mano. Sin red se muestra «Sin conexión: mostrando datos guardados».
-- **Pruebas:** `ProductoRepositorioOfflineTest` (`commonTest`, `JdbcSqliteDriver` + `MockEngine`).
+- **Indicador de sincronización:** la marca de la última sincronización exitosa (epoch millis) vive en la tabla `sincronizacion` de la misma base (migración `1.sqm`, esquema v2). El encabezado del catálogo muestra «Nunca sincronizado», «Actualizado hace X minutos» o «Actualizado hoy a las HH:mm», y el botón «Sincronizar» fuerza el ciclo subir → bajar.
+- **Sesión vencida:** si la sincronización recibe `401`, la app vuelve al login con aviso y **no borra** lo pendiente; al reingresar se envía.
+- **Edición/eliminación sin red:** un producto *pendiente* se edita en local y viaja en el `POST`; uno *ya sincronizado* exige conexión (se informa y no se altera nada).
+- **Pruebas:** `ProductoRepositorioOfflineTest` (6 pruebas del enunciado + 2 de apoyo; `commonTest`, `JdbcSqliteDriver` en memoria + `MockEngine`), `TextoSincronizacionTest` y `ProductoViewModelOfflineTest`.
+- **Informe de la Actividad Autónoma 11:** `docs/entrega/S11_ActividadAutonoma_RodriguezBazan.docx` (generado con `build_doc_s11.py`).
 
 ```bash
 ./gradlew testAndroidHostTest assembleDebug

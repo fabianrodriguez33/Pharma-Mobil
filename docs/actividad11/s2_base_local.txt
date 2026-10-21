@@ -1,0 +1,5 @@
+sqlite> select id, nombre, precio, stock, pendiente from producto order by id;
+-1 | Amoxicilina_Offline | 6.8 | 30 | 1
+1 | Paracetamol 500mg | 12.5 | 40 | 0
+43 | Matriz 001812 | 2.5 | 10 | 0
+44 | Almacen 001831 | 3.0 | 5 | 0

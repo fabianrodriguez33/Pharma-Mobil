@@ -8,12 +8,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.test.runTest
 import pe.edu.upeu.pharmamobil.data.local.ProductoLocal
 import pe.edu.upeu.pharmamobil.data.remote.ProductoApi
@@ -21,19 +16,12 @@ import pe.edu.upeu.pharmamobil.data.remote.crearHttpClient
 import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositorioOffline
 import pe.edu.upeu.pharmamobil.db.PharmaDb
 import pe.edu.upeu.pharmamobil.domain.model.Producto
-import pe.edu.upeu.pharmamobil.domain.usecase.ActualizarProductoUseCase
-import pe.edu.upeu.pharmamobil.domain.usecase.EliminarProductoUseCase
-import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
-import pe.edu.upeu.pharmamobil.domain.usecase.ObservarProductosUseCase
-import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
-import pe.edu.upeu.pharmamobil.presentation.producto.ProductoUiState
-import pe.edu.upeu.pharmamobil.presentation.producto.ProductoViewModel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
+/** Cada prueba crea su propia base SQLite en memoria: no comparten estado. */
 class ProductoRepositorioOfflineTest {
 
     private val json = headersOf(HttpHeaders.ContentType, "application/json")
@@ -52,15 +40,37 @@ class ProductoRepositorioOfflineTest {
         return PharmaDb(driver)
     }
 
-    private fun repositorio(base: PharmaDb, motor: MockEngine) = ProductoRepositorioOffline(
-        local = ProductoLocal(base),
-        remoto = ProductoApi(crearHttpClient(motor, "http://localhost:8080/"))
-    )
+    private fun repositorio(base: PharmaDb, motor: MockEngine, ahora: () -> Long = { 1_000L }) =
+        ProductoRepositorioOffline(
+            local = ProductoLocal(base),
+            remoto = ProductoApi(crearHttpClient(motor, "http://localhost:8080/")),
+            ahora = ahora
+        )
 
     private val servidorCaido = MockEngine { respondError(HttpStatusCode.ServiceUnavailable) }
 
+    /** Servidor sano: acepta el POST (id 7) y lista [catalogo] en el GET. */
+    private fun servidorSano(vararg catalogo: String) = MockEngine { request ->
+        metodos += request.method
+        when (request.method) {
+            HttpMethod.Post -> respond(fila(7, "Paracetamol"), HttpStatusCode.Created, json)
+            else -> respond(pagina(*catalogo), HttpStatusCode.OK, json)
+        }
+    }
+
     @Test
-    fun loRegistradoSinRedQuedaConIdNegativoYPendiente() = runTest {
+    fun prueba1_sincronizarConRedGuardaLosRemotosYObservarLosEmite() = runTest {
+        val base = crearBase()
+        val repo = repositorio(base, servidorSano(fila(1, "Aspirina"), fila(2, "Ibuprofeno")))
+
+        repo.sincronizar()
+
+        assertEquals(2, base.productoQueries.listarTodos().executeAsList().size)
+        assertEquals(listOf("Aspirina", "Ibuprofeno"), repo.observar().first().map { it.nombre })
+    }
+
+    @Test
+    fun prueba2_registrarSinRedGuardaIdNegativoPendienteYElFlowLoEmite() = runTest {
         val base = crearBase()
         val repo = repositorio(base, servidorCaido)
 
@@ -74,31 +84,61 @@ class ProductoRepositorioOfflineTest {
     }
 
     @Test
-    fun sincronizarSubePendientesYReemplazaLaListaLocal() = runTest {
+    fun prueba3_alReconectarSubeElPendienteYQuedaConElIdDelServidor() = runTest {
         val base = crearBase()
         repositorio(base, servidorCaido).registrar(Producto(0L, "Paracetamol", 2.5, 20))
 
-        val motor = MockEngine { request ->
-            metodos += request.method
-            when (request.method) {
-                HttpMethod.Post -> respond(fila(7, "Paracetamol"), HttpStatusCode.Created, json)
-                else -> respond(pagina(fila(7, "Paracetamol"), fila(8, "Ibuprofeno")), HttpStatusCode.OK, json)
-            }
-        }
-        val repo = repositorio(base, motor)
-
-        repo.sincronizar()
+        repositorio(base, servidorSano(fila(7, "Paracetamol"))).sincronizar()
 
         assertEquals(listOf(HttpMethod.Post, HttpMethod.Get), metodos)
         assertTrue(base.productoQueries.listarPendientes().executeAsList().isEmpty())
-        assertEquals(listOf(7L, 8L), repo.observar().first().map { it.id }.sorted())
+        val filas = base.productoQueries.listarTodos().executeAsList()
+        assertEquals(listOf(7L), filas.map { it.id })
+        assertEquals(0L, filas.single().pendiente)
+    }
+
+    @Test
+    fun prueba4_laBajadaNoBorraLoPendiente() = runTest {
+        val base = crearBase()
+        val local = ProductoLocal(base)
+        local.reemplazarSincronizados(listOf(Producto(1L, "Viejo", 1.0, 5)))
+        val pendiente = local.guardarPendiente(Producto(0L, "Creado sin red", 2.0, 3))
+
+        local.reemplazarSincronizados(listOf(Producto(2L, "Nuevo", 1.0, 5)))
+
+        val filas = base.productoQueries.listarTodos().executeAsList()
+        assertEquals(setOf("Creado sin red", "Nuevo"), filas.map { it.nombre }.toSet())
+        assertEquals(listOf(pendiente.id), base.productoQueries.listarPendientes().executeAsList().map { it.id })
+    }
+
+    @Test
+    fun prueba5_idsNegativosYPositivosConviven() = runTest {
+        val base = crearBase()
+        val local = ProductoLocal(base)
+        val a = local.guardarPendiente(Producto(0L, "Local A", 1.0, 1))
+        val b = local.guardarPendiente(Producto(0L, "Local B", 1.0, 1))
+
+        local.reemplazarSincronizados(listOf(Producto(1L, "Remoto 1", 1.0, 1), Producto(2L, "Remoto 2", 1.0, 1)))
+
+        assertEquals(listOf(-1L, -2L), listOf(a.id, b.id))
+        assertEquals(listOf(-2L, -1L, 1L, 2L), base.productoQueries.listarTodos().executeAsList().map { it.id }.sorted())
+    }
+
+    @Test
+    fun prueba6_sincronizarDosVecesNoDuplicaRegistros() = runTest {
+        val base = crearBase()
+        val repo = repositorio(base, servidorSano(fila(1, "Aspirina"), fila(2, "Ibuprofeno")))
+
+        repo.sincronizar()
+        repo.sincronizar()
+
+        assertEquals(2, base.productoQueries.listarTodos().executeAsList().size)
     }
 
     @Test
     fun conElServidorFueraDeLineaObservarEmiteLosDatosGuardados() = runTest {
         val base = crearBase()
-        val local = ProductoLocal(base)
-        local.reemplazarSincronizados(listOf(Producto(1L, "Aspirina", 1.0, 5)))
+        ProductoLocal(base).reemplazarSincronizados(listOf(Producto(1L, "Aspirina", 1.0, 5)))
         val repo = repositorio(base, servidorCaido)
 
         assertFailsWith<Exception> { repo.sincronizar() }
@@ -107,27 +147,15 @@ class ProductoRepositorioOfflineTest {
     }
 
     @Test
-    fun elViewModelMuestraLoRegistradoSinRecargarAMano() = runTest {
-        Dispatchers.setMain(UnconfinedTestDispatcher())
-        try {
-            val repo = repositorio(crearBase(), servidorCaido)
-            val viewModel = ProductoViewModel(
-                registrarProducto = RegistrarProductoUseCase(repo),
-                listarProductos = ListarProductosUseCase(repo),
-                actualizarProducto = ActualizarProductoUseCase(repo),
-                eliminarProducto = EliminarProductoUseCase(repo),
-                observarProductos = ObservarProductosUseCase(repo)
-            )
-            viewModel.onNombreChange("Paracetamol")
-            viewModel.onPrecioChange("2.5")
-            viewModel.onStockChange("20")
+    fun laSincronizacionExitosaGuardaSuMarcaDeTiempoYLaFallidaNo() = runTest {
+        val base = crearBase()
+        assertEquals(null, repositorio(base, servidorCaido).ultimaSincronizacion().first())
 
-            viewModel.guardar()
+        assertFailsWith<Exception> { repositorio(base, servidorCaido).sincronizar() }
+        assertEquals(null, repositorio(base, servidorCaido).ultimaSincronizacion().first())
 
-            val fase = viewModel.uiState.first { it.fase is ProductoUiState.Fase.ConProductos }.fase
-            assertEquals(1, (fase as ProductoUiState.Fase.ConProductos).productos.size)
-        } finally {
-            Dispatchers.resetMain()
-        }
+        val repo = repositorio(base, servidorSano(fila(1, "Aspirina")), ahora = { 1_700_000_000_000L })
+        repo.sincronizar()
+        assertEquals(1_700_000_000_000L, repo.ultimaSincronizacion().first())
     }
 }

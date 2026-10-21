@@ -1,0 +1,34 @@
+pe.edu.upeu.pharmamobil.ProductoRepositorioOfflineTest  tests=8 fallos=0
+    PASSED  laSincronizacionExitosaGuardaSuMarcaDeTiempoYLaFallidaNo  (3.083s)
+    PASSED  prueba5_idsNegativosYPositivosConviven  (0.022s)
+    PASSED  conElServidorFueraDeLineaObservarEmiteLosDatosGuardados  (0.037s)
+    PASSED  prueba2_registrarSinRedGuardaIdNegativoPendienteYElFlowLoEmite  (0.068s)
+    PASSED  prueba4_laBajadaNoBorraLoPendiente  (0.01s)
+    PASSED  prueba3_alReconectarSubeElPendienteYQuedaConElIdDelServidor  (0.063s)
+    PASSED  prueba1_sincronizarConRedGuardaLosRemotosYObservarLosEmite  (0.022s)
+    PASSED  prueba6_sincronizarDosVecesNoDuplicaRegistros  (0.043s)
+pe.edu.upeu.pharmamobil.SharedCommonTest  tests=1 fallos=0
+pe.edu.upeu.pharmamobil.SharedLogicAndroidHostTest  tests=1 fallos=0
+pe.edu.upeu.pharmamobil.data.mapper.ProductoMapperTest  tests=2 fallos=0
+pe.edu.upeu.pharmamobil.data.repository.CerrarSesionTest  tests=1 fallos=0
+pe.edu.upeu.pharmamobil.data.repository.ClienteRepositorioEnMemoriaTest  tests=2 fallos=0
+pe.edu.upeu.pharmamobil.data.repository.ProductoRepositorioEnMemoriaTest  tests=2 fallos=0
+pe.edu.upeu.pharmamobil.di.AppModuleTest  tests=4 fallos=0
+pe.edu.upeu.pharmamobil.domain.error.ErrorApiTest  tests=4 fallos=0
+pe.edu.upeu.pharmamobil.domain.model.ClienteTest  tests=4 fallos=0
+pe.edu.upeu.pharmamobil.domain.model.ProductoTest  tests=5 fallos=0
+pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCaseTest  tests=2 fallos=0
+pe.edu.upeu.pharmamobil.domain.usecase.RegistrarClienteUseCaseTest  tests=8 fallos=0
+pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCaseTest  tests=11 fallos=0
+pe.edu.upeu.pharmamobil.presentation.cliente.ClienteViewModelTest  tests=4 fallos=0
+pe.edu.upeu.pharmamobil.presentation.login.LoginViewModelTest  tests=4 fallos=0
+pe.edu.upeu.pharmamobil.presentation.producto.ProductoViewModelOfflineTest  tests=1 fallos=0
+    PASSED  elViewModelMuestraLoRegistradoSinRecargarAMano  (0.062s)
+pe.edu.upeu.pharmamobil.presentation.producto.ProductoViewModelTest  tests=11 fallos=0
+pe.edu.upeu.pharmamobil.presentation.productos.TextoSincronizacionTest  tests=5 fallos=0
+    PASSED  sinSincronizacionPreviaDiceNuncaSincronizado  (0.004s)
+    PASSED  enMinutosDiceHaceXMinutos  (0.001s)
+    PASSED  deOtroDiaMuestraLaFecha  (0.001s)
+    PASSED  elMismoDiaDiceHoyALasHoraMinuto  (0.001s)
+    PASSED  menosDeUnMinutoDiceHaceUnMomento  (0.001s)
+TOTAL pruebas: 80

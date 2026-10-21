@@ -1,0 +1,10 @@
+CREATE TABLE sincronizacion (
+    clave  TEXT    NOT NULL PRIMARY KEY,
+    valor  INTEGER NOT NULL
+);
+
+ultimaSincronizacion:
+SELECT valor FROM sincronizacion WHERE clave = 'ultima';
+
+guardarUltimaSincronizacion:
+INSERT OR REPLACE INTO sincronizacion VALUES ('ultima', ?);

@@ -12,16 +12,20 @@ import pe.edu.upeu.pharmamobil.domain.error.traducirErrores
 import pe.edu.upeu.pharmamobil.domain.model.ImagenProducto
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
+import kotlin.time.Clock
 
 /** La base local es la única fuente de verdad; la red solo sincroniza. */
 class ProductoRepositorioOffline(
     private val local: ProductoLocal,
     private val remoto: ProductoApi,
     private val categoriaPorDefectoId: Long = 1L,
-    private val baseUrl: String = ""
+    private val baseUrl: String = "",
+    private val ahora: () -> Long = { Clock.System.now().toEpochMilliseconds() }
 ) : ProductoRepository {
 
     override fun observar(): Flow<List<Producto>> = local.observar()
+
+    override fun ultimaSincronizacion(): Flow<Long?> = local.observarUltimaSincronizacion()
 
     override suspend fun listar(): List<Producto> = local.listar()
 
@@ -68,12 +72,13 @@ class ProductoRepositorioOffline(
     override suspend fun sincronizar() = traducirErrores {
         subirPendientes()
         local.reemplazarSincronizados(descargarTodo())
+        local.guardarUltimaSincronizacion(ahora())
     }
 
     private suspend fun subirPendientes() {
         local.pendientes().forEach { producto ->
-            remoto.crear(producto.toRequestDto(categoriaPorDefectoId))
-            local.confirmarPendiente(producto.id)
+            val creado = remoto.crear(producto.toRequestDto(categoriaPorDefectoId)).toDomain(baseUrl)
+            local.confirmarPendiente(producto.id, creado)
         }
     }
 

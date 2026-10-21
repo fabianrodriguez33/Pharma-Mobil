@@ -3,15 +3,19 @@ package pe.edu.upeu.pharmamobil.presentation.productos
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import pe.edu.upeu.pharmamobil.domain.error.ErrorApi
+import pe.edu.upeu.pharmamobil.domain.error.ErrorApiException
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobil.platform.formatearSoles
 import pe.edu.upeu.pharmamobil.presentation.producto.mensajeLegible
+import kotlin.time.Clock
 
 class ProductosViewModel(
     private val repository: ProductoRepository,
@@ -24,6 +28,7 @@ class ProductosViewModel(
     private var productos: List<Producto> = emptyList()
     private var sincronizando = false
     private var avisoRed: String? = null
+    private var ultimaSincronizacion: Long? = null
 
     init {
         viewModelScope.launch {
@@ -38,6 +43,19 @@ class ProductosViewModel(
                 _estado.value = ProductosUiState.Error(
                     e.mensajeLegible("No se pudo leer el catálogo guardado")
                 )
+            }
+        }
+        viewModelScope.launch {
+            repository.ultimaSincronizacion().collect {
+                ultimaSincronizacion = it
+                publicar()
+            }
+        }
+        viewModelScope.launch {
+            // Refresca el "hace X minutos" aunque no cambie nada en la base.
+            while (true) {
+                delay(30_000)
+                publicar()
             }
         }
         sincronizar()
@@ -57,7 +75,11 @@ class ProductosViewModel(
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            avisoRed = "Sin conexión: mostrando datos guardados"
+            avisoRed = if ((e as? ErrorApiException)?.error == ErrorApi.NoAutenticado) {
+                "Sesión vencida: inicia sesión de nuevo. Tus cambios pendientes siguen guardados"
+            } else {
+                "Sin conexión: mostrando datos guardados"
+            }
         }
         sincronizando = false
         publicar()
@@ -70,7 +92,8 @@ class ProductosViewModel(
         _estado.value = ProductosUiState.Success(
             productos.map { ProductoItemUi(it.id, it.nombre, it.imagen, formatearSoles(it.precio)) },
             sincronizando,
-            avisoRed
+            avisoRed,
+            textoUltimaSincronizacion(ultimaSincronizacion, Clock.System.now().toEpochMilliseconds())
         )
     }
 }

@@ -2,6 +2,7 @@ package pe.edu.upeu.pharmamobil.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import pe.edu.upeu.pharmamobil.domain.model.ImagenProducto
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 
@@ -9,6 +10,9 @@ interface ProductoRepository {
 
     /** Catálogo reactivo: emite cada vez que cambia la fuente de verdad. */
     fun observar(): Flow<List<Producto>> = flow { emit(listar()) }
+
+    /** Marca de tiempo (epoch millis) de la última sincronización exitosa; null si nunca hubo. */
+    fun ultimaSincronizacion(): Flow<Long?> = flowOf(null)
 
     /** Sube lo pendiente y luego descarga el catálogo del servidor. */
     suspend fun sincronizar() {}

@@ -2,6 +2,7 @@ package pe.edu.upeu.pharmamobil.data.local
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOneOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -9,7 +10,7 @@ import pe.edu.upeu.pharmamobil.db.PharmaDb
 import pe.edu.upeu.pharmamobil.db.Producto as ProductoEntity
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 
-class ProductoLocal(base: PharmaDb) {
+class ProductoLocal(private val base: PharmaDb) {
     private val consultas = base.productoQueries
 
     fun observar(): Flow<List<Producto>> =
@@ -17,6 +18,15 @@ class ProductoLocal(base: PharmaDb) {
             .asFlow()
             .mapToList(Dispatchers.Default)
             .map { filas -> filas.map { it.aDominio() } }
+
+    fun observarUltimaSincronizacion(): Flow<Long?> =
+        base.sincronizacionQueries.ultimaSincronizacion()
+            .asFlow()
+            .mapToOneOrNull(Dispatchers.Default)
+
+    fun guardarUltimaSincronizacion(epochMillis: Long) {
+        base.sincronizacionQueries.guardarUltimaSincronizacion(epochMillis)
+    }
 
     fun listar(): List<Producto> =
         consultas.listarTodos().executeAsList().map { it.aDominio() }
@@ -53,9 +63,12 @@ class ProductoLocal(base: PharmaDb) {
         consultas.borrarPorId(id)
     }
 
-    /** Descarta la fila pendiente que el servidor ya confirmó con su id real. */
-    fun confirmarPendiente(idLocal: Long) {
-        consultas.borrarPorId(idLocal)
+    /** La fila pendiente pasa a sincronizada con el id definitivo que asignó el servidor. */
+    fun confirmarPendiente(idLocal: Long, confirmado: Producto) {
+        consultas.transaction {
+            consultas.borrarPorId(idLocal)
+            guardarSincronizado(confirmado)
+        }
     }
 
     fun reemplazarSincronizados(productos: List<Producto>) {

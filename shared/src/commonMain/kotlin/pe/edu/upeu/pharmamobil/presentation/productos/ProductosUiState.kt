@@ -13,7 +13,8 @@ sealed interface ProductosUiState {
     data class Success(
         val productos: List<ProductoItemUi>,
         val sincronizando: Boolean = false,
-        val avisoRed: String? = null
+        val avisoRed: String? = null,
+        val ultimaSincronizacion: String = "Nunca sincronizado"
     ) : ProductosUiState
     data class Error(val mensaje: String) : ProductosUiState
 }

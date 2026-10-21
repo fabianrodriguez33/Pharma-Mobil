@@ -1,0 +1,265 @@
+Calculating task graph as no cached configuration is available for tasks: testAndroidHostTest
+
+> Configure project :shared
+w: Native task 'iosSimulatorArm64Test' is disabled
+Task 'iosSimulatorArm64Test' for target 'ios_simulator_arm64' cannot run on the current host (windows-x86_64).
+Reason: simulator tests require macOS
+Solution: To suppress this warning, add 'kotlin.native.ignoreDisabledTargets=true' to gradle.properties.
+
+
+> Task :shared:generateAndroidMainAssets UP-TO-DATE
+> Task :shared:androidPreBuild UP-TO-DATE
+> Task :shared:generateAndroidHostTestAssets UP-TO-DATE
+> Task :shared:preAndroidHostTestBuild UP-TO-DATE
+> Task :shared:preAndroidMainBuild UP-TO-DATE
+> Task :shared:copyNonXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:convertXmlValueResourcesForAndroidMain NO-SOURCE
+> Task :shared:convertXmlValueResourcesForAndroidHostTest NO-SOURCE
+> Task :shared:kmpPartiallyResolvedDependenciesChecker
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:convertXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonTest NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForAndroidMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForAndroidHostTest NO-SOURCE
+> Task :shared:generateResourceAccessorsForAndroidHostTest NO-SOURCE
+> Task :shared:generateResourceAccessorsForAndroidMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForCommonTest NO-SOURCE
+> Task :shared:generateResourceAccessorsForCommonTest NO-SOURCE
+> Task :shared:processAndroidHostTestJavaRes NO-SOURCE
+> Task :shared:generateAndroidMainEmptyResourceFiles
+> Task :shared:copyNonXmlValueResourcesForCommonMain
+> Task :shared:writeAndroidMainAarMetadata
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:androidJar
+> Task :shared:prepareComposeResourcesTaskForCommonMain
+> Task :shared:generateExpectResourceCollectorsForCommonMain
+> Task :shared:generateComposeResClass
+> Task :shared:generateAndroidHostTestResources
+> Task :shared:copyAndroidMainComposeResourcesToAndroidAssets
+> Task :shared:generateResourceAccessorsForCommonMain
+> Task :shared:generateActualResourceCollectorsForAndroidMain
+> Task :shared:mergeAndroidMainAssets
+> Task :shared:processAndroidMainManifest
+> Task :shared:packageAndroidMainResources
+> Task :shared:compileAndroidMainLibraryResources
+> Task :shared:mapAndroidHostTestSourceSetPaths
+> Task :shared:mergeAndroidHostTestAssets
+> Task :shared:parseAndroidMainLocalResources
+> Task :shared:checkAndroidHostTestAarMetadata
+> Task :shared:generateAndroidMainRFile
+> Task :shared:processAndroidHostTestManifest
+
+> Task :shared:generateCommonMainPharmaDbInterface
+WARN: Attempt to load key 'ide.hide.excluded.files' for not yet loaded registry
+WARN: Attempt to load key 'psi.sleep.in.validity.check' for not yet loaded registry
+WARN: Attempt to load key 'psi.incremental.reparse.depth.limit' for not yet loaded registry
+
+> Task :shared:mergeAndroidHostTestResources
+> Task :shared:processAndroidHostTestResources
+> Task :shared:packageAndroidHostTestForUnitTest
+> Task :shared:generateAndroidHostTestConfig
+> Task :shared:compileAndroidMain
+w: file:///D:/DAM/pharmaMobil-master/shared/src/androidMain/kotlin/pe/edu/upeu/pharmamobil/platform/Formato.android.kt:8:56 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/DAM/pharmaMobil-master/shared/src/androidMain/kotlin/pe/edu/upeu/pharmamobil/platform/Formato.android.kt:16:40 'constructor(p0: String!, p1: String!): Locale' is deprecated. Deprecated in Java.
+w: file:///D:/DAM/pharmaMobil-master/shared/src/androidMain/kotlin/pe/edu/upeu/pharmamobil/platform/InfoDispositivo.android.kt:5:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. Consider using the '-Xexpect-actual-classes' flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+w: file:///D:/DAM/pharmaMobil-master/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobil/App.kt:103:13 'fun KoinContext(koin: Koin = ..., content: ComposableFunction0<Unit>): Unit' is deprecated. KoinContext is not needed anymore. This can be removed. Compose Koin context is setup with StartKoin().
+w: file:///D:/DAM/pharmaMobil-master/shared/src/commonMain/kotlin/pe/edu/upeu/pharmamobil/platform/InfoDispositivo.kt:7:1 'expect'/'actual' classes (including interfaces, objects, annotations, enums, and 'actual' typealiases) are in Beta. Consider using the '-Xexpect-actual-classes' flag to suppress this warning. Also see: https://youtrack.jetbrains.com/issue/KT-61573
+
+> Task :shared:processAndroidMainJavaRes
+> Task :shared:bundleAndroidMainClassesToCompileJar
+> Task :shared:bundleAndroidMainClassesToRuntimeJar
+> Task :shared:compileAndroidHostTest
+
+> Task :shared:testAndroidHostTest
+
+ProductoRepositorioOfflineTest > laSincronizacionExitosaGuardaSuMarcaDeTiempoYLaFallidaNo STANDARD_ERROR
+    SLF4J(W): No SLF4J providers were found.
+    SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+    SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+
+ProductoRepositorioOfflineTest > laSincronizacionExitosaGuardaSuMarcaDeTiempoYLaFallidaNo STANDARD_OUT
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+    HttpClient: RESPONSE: 503 Service Unavailable
+    METHOD: GET
+    FROM: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    COMMON HEADERS
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+    HttpClient: RESPONSE: 200 OK
+    METHOD: GET
+    FROM: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    COMMON HEADERS
+    -> Content-Type: application/json
+
+ProductoRepositorioOfflineTest > conElServidorFueraDeLineaObservarEmiteLosDatosGuardados STANDARD_OUT
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+    HttpClient: RESPONSE: 503 Service Unavailable
+    METHOD: GET
+    FROM: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    COMMON HEADERS
+
+ProductoRepositorioOfflineTest > prueba2_registrarSinRedGuardaIdNegativoPendienteYElFlowLoEmite STANDARD_OUT
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos
+    METHOD: POST
+    COMMON HEADERS
+    -> Accept: application/json
+    CONTENT HEADERS
+    -> Content-Length: 109
+    -> Content-Type: application/json
+    HttpClient: RESPONSE: 503 Service Unavailable
+    METHOD: POST
+    FROM: http://localhost:8080/api/v1/productos
+    COMMON HEADERS
+
+ProductoRepositorioOfflineTest > prueba3_alReconectarSubeElPendienteYQuedaConElIdDelServidor STANDARD_OUT
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos
+    METHOD: POST
+    COMMON HEADERS
+    -> Accept: application/json
+    CONTENT HEADERS
+    -> Content-Length: 109
+    -> Content-Type: application/json
+    HttpClient: RESPONSE: 503 Service Unavailable
+    METHOD: POST
+    FROM: http://localhost:8080/api/v1/productos
+    COMMON HEADERS
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos
+    METHOD: POST
+    COMMON HEADERS
+    -> Accept: application/json
+    CONTENT HEADERS
+    -> Content-Length: 109
+    -> Content-Type: application/json
+    HttpClient: RESPONSE: 201 Created
+    METHOD: POST
+    FROM: http://localhost:8080/api/v1/productos
+    COMMON HEADERS
+    -> Content-Type: application/json
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+    HttpClient: RESPONSE: 200 OK
+    METHOD: GET
+    FROM: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    COMMON HEADERS
+    -> Content-Type: application/json
+
+ProductoRepositorioOfflineTest > prueba1_sincronizarConRedGuardaLosRemotosYObservarLosEmite STANDARD_OUT
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+    HttpClient: RESPONSE: 200 OK
+    METHOD: GET
+    FROM: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    COMMON HEADERS
+    -> Content-Type: application/json
+
+ProductoRepositorioOfflineTest > prueba6_sincronizarDosVecesNoDuplicaRegistros STANDARD_OUT
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+    HttpClient: RESPONSE: 200 OK
+    METHOD: GET
+    FROM: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    COMMON HEADERS
+    -> Content-Type: application/json
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+    HttpClient: RESPONSE: 200 OK
+    METHOD: GET
+    FROM: http://localhost:8080/api/v1/productos?pagina=0&tamanio=100
+    COMMON HEADERS
+    -> Content-Type: application/json
+
+CerrarSesionTest > cerrarSesionAplicaLosCuatroEfectos STANDARD_OUT
+    HttpClient: REQUEST: http://localhost/api/v1/auth/login
+    METHOD: POST
+    COMMON HEADERS
+    -> Accept: application/json
+    CONTENT HEADERS
+    -> Content-Length: 55
+    -> Content-Type: application/json
+    HttpClient: RESPONSE: 200 OK
+    METHOD: POST
+    FROM: http://localhost/api/v1/auth/login
+    COMMON HEADERS
+    -> Content-Type: application/json
+    HttpClient: REQUEST: http://localhost/api/v1/productos
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Authorization: ***
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+    HttpClient: RESPONSE: 200 OK
+    METHOD: GET
+    FROM: http://localhost/api/v1/productos
+    COMMON HEADERS
+    -> Content-Type: application/json
+    HttpClient: REQUEST: http://localhost/api/v1/productos
+    METHOD: GET
+    COMMON HEADERS
+    -> Accept: application/json
+    -> Content-Type: application/json
+    CONTENT HEADERS
+    -> Content-Length: 0
+    HttpClient: RESPONSE: 200 OK
+    METHOD: GET
+    FROM: http://localhost/api/v1/productos
+    COMMON HEADERS
+    -> Content-Type: application/json
+
+ProductoViewModelOfflineTest > elViewModelMuestraLoRegistradoSinRecargarAMano STANDARD_OUT
+    HttpClient: REQUEST: http://localhost:8080/api/v1/productos
+    METHOD: POST
+    COMMON HEADERS
+    -> Accept: application/json
+    CONTENT HEADERS
+    -> Content-Length: 109
+    -> Content-Type: application/json
+    HttpClient: RESPONSE: 503 Service Unavailable
+    METHOD: POST
+    FROM: http://localhost:8080/api/v1/productos
+    COMMON HEADERS
+
+[Incubating] Problems report is available at: file:///D:/DAM/pharmaMobil-master/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 1m 52s
+33 actionable tasks: 33 executed
+Configuration cache entry stored.

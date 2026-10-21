@@ -1,0 +1,4 @@
+1 Paracetamol 500mg 12.5 40
+43 Matriz 001812 2.5 10
+44 Almacen 001831 3 5
+48 Amoxicilina_Offline 7.2 30
