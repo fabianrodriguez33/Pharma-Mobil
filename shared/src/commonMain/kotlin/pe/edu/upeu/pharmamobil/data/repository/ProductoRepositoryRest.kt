@@ -5,6 +5,7 @@ import pe.edu.upeu.pharmamobil.data.mapper.toDomainValidos
 import pe.edu.upeu.pharmamobil.data.mapper.toRequestDto
 import pe.edu.upeu.pharmamobil.data.remote.ProductoApi
 import pe.edu.upeu.pharmamobil.domain.error.traducirErrores
+import pe.edu.upeu.pharmamobil.domain.model.ImagenProducto
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
 
@@ -14,23 +15,28 @@ import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
  */
 class ProductoRepositoryRest(
     private val api: ProductoApi,
-    private val categoriaPorDefectoId: Long = 1L
+    private val categoriaPorDefectoId: Long = 1L,
+    private val baseUrl: String = ""
 ) : ProductoRepository {
 
     override suspend fun listar(): List<Producto> = traducirErrores {
-        api.listar().contenido.toDomainValidos()
+        api.listar().contenido.toDomainValidos(baseUrl)
     }
 
     override suspend fun obtenerPorId(id: Long): Producto = traducirErrores {
-        api.obtenerPorId(id).toDomain()
+        api.obtenerPorId(id).toDomain(baseUrl)
     }
 
     override suspend fun registrar(producto: Producto): Producto = traducirErrores {
-        api.crear(producto.toRequestDto(categoriaPorDefectoId)).toDomain()
+        api.crear(producto.toRequestDto(categoriaPorDefectoId)).toDomain(baseUrl)
     }
 
     override suspend fun actualizar(producto: Producto): Producto = traducirErrores {
-        api.actualizar(producto.id, producto.toRequestDto(categoriaPorDefectoId)).toDomain()
+        api.actualizar(producto.id, producto.toRequestDto(categoriaPorDefectoId)).toDomain(baseUrl)
+    }
+
+    override suspend fun subirImagen(id: Long, imagen: ImagenProducto): Producto = traducirErrores {
+        api.subirImagen(id, imagen.bytes, imagen.nombre, imagen.tipo).toDomain(baseUrl)
     }
 
     override suspend fun eliminar(id: Long) = traducirErrores {

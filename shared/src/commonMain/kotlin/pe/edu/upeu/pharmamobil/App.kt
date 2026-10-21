@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -105,9 +106,9 @@ fun App() = KoinContext {
         mutableStateOf<Screen>(Screen.Inicio)
     }
 
-    var darkTheme by rememberSaveable {
-        mutableStateOf(false)
-    }
+    // null = sigue el tema del sistema; al tocar el interruptor se fija a mano.
+    var temaManual by rememberSaveable { mutableStateOf<Boolean?>(null) }
+    val darkTheme = temaManual ?: isSystemInDarkTheme()
 
     val sesionViewModel: SesionViewModel = koinViewModel()
     val sesionActual by sesionViewModel.sesion.collectAsStateWithLifecycle()
@@ -124,7 +125,9 @@ fun App() = KoinContext {
             val loginViewModel: LoginViewModel = koinViewModel()
             LoginScreen(
                 viewModel = loginViewModel,
-                aviso = if (avisoExpirada) "Tu sesión expiró. Inicia sesión nuevamente." else null
+                aviso = if (avisoExpirada) "Tu sesión expiró. Inicia sesión nuevamente." else null,
+                oscuro = darkTheme,
+                onAlternarTema = { temaManual = !darkTheme }
             )
         } else {
         val destinos = DESTINOS.filter { it.permiso == null || sesion.puede(it.permiso) }
@@ -164,7 +167,7 @@ fun App() = KoinContext {
                             )
                         }
                         IconButton(
-                            onClick = { darkTheme = !darkTheme }
+                            onClick = { temaManual = !darkTheme }
                         ) {
                             Icon(
                                 imageVector = if (darkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,

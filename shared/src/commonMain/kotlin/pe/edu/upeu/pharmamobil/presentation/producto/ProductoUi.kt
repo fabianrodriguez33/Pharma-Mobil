@@ -12,7 +12,8 @@ data class ProductoUi(
     val requiereReposicion: Boolean,
     /** Valores crudos para precargar el formulario al editar. */
     val precioNumero: Double,
-    val stockNumero: Int
+    val stockNumero: Int,
+    val imagen: String = ""
 )
 
 fun Producto.aUi(): ProductoUi = ProductoUi(
@@ -22,7 +23,8 @@ fun Producto.aUi(): ProductoUi = ProductoUi(
     stock = "$stock u.",
     requiereReposicion = requiereReposicion,
     precioNumero = precio,
-    stockNumero = stock
+    stockNumero = stock,
+    imagen = imagen
 )
 
 /** Kotlin comun no trae String.format, asi que armamos los dos decimales a mano. */

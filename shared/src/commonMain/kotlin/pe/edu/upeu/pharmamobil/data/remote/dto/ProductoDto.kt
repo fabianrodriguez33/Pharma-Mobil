@@ -19,5 +19,7 @@ data class ProductoResponseDto(
     val stock: Int,
     val estado: Boolean = true,
     val categoriaId: Long? = null,
-    val categoriaNombre: String? = null
+    val categoriaNombre: String? = null,
+    /** Ruta relativa publica de la foto (/imagenes/archivo.jpg), si el producto tiene. */
+    val imagen: String? = null
 )

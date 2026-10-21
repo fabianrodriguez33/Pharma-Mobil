@@ -57,7 +57,7 @@ fun ProductosScreen(
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
 
             is ProductosUiState.Success ->
-                if (e.productos.isEmpty()) {
+                if (e.productos.isEmpty() && e.avisoRed == null) {
                     EstadoVacio(
                         icono = Icons.Default.Inventory2,
                         titulo = "Sin productos",
@@ -65,7 +65,7 @@ fun ProductosScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    CatalogoGrid(e.productos, viewModel::compartir)
+                    CatalogoGrid(e.productos, e.avisoRed, viewModel::compartir)
                 }
 
             is ProductosUiState.Error ->
@@ -86,7 +86,7 @@ fun ProductosScreen(
 }
 
 @Composable
-private fun CatalogoGrid(productos: List<ProductoItemUi>, onCompartir: (Long) -> Unit) {
+private fun CatalogoGrid(productos: List<ProductoItemUi>, avisoRed: String?, onCompartir: (Long) -> Unit) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         modifier = Modifier.fillMaxSize(),
@@ -106,6 +106,13 @@ private fun CatalogoGrid(productos: List<ProductoItemUi>, onCompartir: (Long) ->
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (avisoRed != null) {
+                    Text(
+                        text = avisoRed,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
                 AcercaDelDispositivo()
             }
         }

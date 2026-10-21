@@ -1,6 +1,15 @@
 package pe.edu.upeu.pharmamobil.presentation.producto
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
+import pe.edu.upeu.pharmamobil.platform.rememberSelectorImagen
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -62,6 +71,7 @@ fun ProductoScreen(
                 onNombreChange = viewModel::onNombreChange,
                 onPrecioChange = viewModel::onPrecioChange,
                 onStockChange = viewModel::onStockChange,
+                onImagenElegida = viewModel::onImagenElegida,
                 onGuardar = viewModel::guardar,
                 onCancelar = viewModel::cancelarEdicion
             )
@@ -157,6 +167,7 @@ private fun FormularioProductoCard(
     onNombreChange: (String) -> Unit,
     onPrecioChange: (String) -> Unit,
     onStockChange: (String) -> Unit,
+    onImagenElegida: (pe.edu.upeu.pharmamobil.domain.model.ImagenProducto?) -> Unit,
     onGuardar: () -> Unit,
     onCancelar: () -> Unit
 ) {
@@ -211,6 +222,57 @@ private fun FormularioProductoCard(
                     keyboardType = KeyboardType.Number,
                     modifier = Modifier.weight(1f)
                 )
+            }
+
+            val abrirGaleria = rememberSelectorImagen(onImagenElegida)
+            val vistaPrevia: Any? = formulario.imagen?.bytes
+                ?: formulario.imagenActual.ifBlank { null }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.size(64.dp)
+                ) {
+                    if (vistaPrevia != null) {
+                        AsyncImage(
+                            model = vistaPrevia,
+                            contentDescription = "Foto del producto",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.AddPhotoAlternate,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(18.dp)
+                        )
+                    }
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    OutlinedButton(onClick = abrirGaleria, enabled = !ocupado) {
+                        Text(if (vistaPrevia != null) "Cambiar foto" else "Agregar foto")
+                    }
+                    Text(
+                        text = if (formulario.imagen != null) "Foto lista para subir"
+                        else "Opcional · sin foto se guarda igual",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+
+                if (formulario.imagen != null) {
+                    TextButton(onClick = { onImagenElegida(null) }, enabled = !ocupado) {
+                        Text("Quitar")
+                    }
+                }
             }
 
             Button(
@@ -293,16 +355,24 @@ private fun ProductoItem(
             Surface(
                 shape = RoundedCornerShape(10.dp),
                 color = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                modifier = Modifier.size(40.dp)
             ) {
 
-                Icon(
-                    imageVector = Icons.Default.Medication,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .size(20.dp)
-                )
+                if (producto.imagen.isNotBlank()) {
+                    AsyncImage(
+                        model = producto.imagen,
+                        contentDescription = producto.nombre,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Medication,
+                        contentDescription = null,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
             }
 
             Column(

@@ -14,6 +14,8 @@ import pe.edu.upeu.pharmamobil.domain.usecase.EliminarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ProductoInvalidoException
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
+import pe.edu.upeu.pharmamobil.domain.usecase.SubirImagenProductoUseCase
+import pe.edu.upeu.pharmamobil.domain.model.ImagenProducto
 import pe.edu.upeu.pharmamobil.presentation.producto.ProductoUiState.Operacion
 import pe.edu.upeu.pharmamobil.presentation.producto.ProductoUiState.Operacion.Tipo
 
@@ -22,7 +24,8 @@ class ProductoViewModel(
     private val registrarProducto: RegistrarProductoUseCase,
     private val listarProductos: ListarProductosUseCase,
     private val actualizarProducto: ActualizarProductoUseCase,
-    private val eliminarProducto: EliminarProductoUseCase
+    private val eliminarProducto: EliminarProductoUseCase,
+    private val subirImagen: SubirImagenProductoUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProductoUiState())
@@ -91,6 +94,17 @@ class ProductoViewModel(
         }
     }
 
+    /** Foto opcional: null la quita y el producto se guarda sin imagen nueva. */
+    fun onImagenElegida(imagen: ImagenProducto?) {
+        _uiState.update {
+            it.copy(
+                formulario = it.formulario.copy(imagen = imagen),
+                operacion = Operacion.Inactiva,
+                mensajeExito = null
+            )
+        }
+    }
+
     fun editar(producto: ProductoUi) {
         _uiState.update {
             it.copy(
@@ -98,7 +112,8 @@ class ProductoViewModel(
                     id = producto.id,
                     nombre = producto.nombre,
                     precio = producto.precioNumero.toString(),
-                    stock = producto.stockNumero.toString()
+                    stock = producto.stockNumero.toString(),
+                    imagenActual = producto.imagen
                 ),
                 operacion = Operacion.Inactiva,
                 mensajeExito = null
@@ -132,9 +147,31 @@ class ProductoViewModel(
                 registrarProducto(formulario.nombre, formulario.precio, formulario.stock)
             }
 
+            // La foto es opcional: solo se sube si se eligio una y el producto ya existe.
+            val imagen = formulario.imagen
+            var avisoImagen: String? = null
+            val guardado = resultado.getOrNull()
+            if (guardado != null && imagen != null && subirImagen != null) {
+                subirImagen(guardado.id, imagen).onFailure {
+                    avisoImagen = it.mensajeLegible("No se pudo subir la imagen")
+                }
+            }
+
             resultado.fold(
                 onSuccess = { producto ->
                     val verbo = if (tipo == Tipo.Crear) "registrado" else "actualizado"
+                    if (avisoImagen != null) {
+                        _uiState.update {
+                            it.copy(
+                                operacion = Operacion.Fallida(
+                                    "Producto \"${producto.nombre}\" $verbo, pero la imagen no se subió: $avisoImagen"
+                                ),
+                                formulario = FormularioProducto()
+                            )
+                        }
+                        cargarProductos()
+                        return@fold
+                    }
                     _uiState.update {
                         it.copy(
                             operacion = Operacion.Inactiva,

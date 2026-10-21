@@ -15,7 +15,7 @@ import pe.edu.upeu.pharmamobil.domain.usecase.ObtenerSesionUseCase
 import pe.edu.upeu.pharmamobil.presentation.login.LoginViewModel
 import pe.edu.upeu.pharmamobil.presentation.login.SesionViewModel
 import pe.edu.upeu.pharmamobil.data.remote.crearHttpClient
-import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositoryRest
+import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositorioOffline
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobil.presentation.productos.ProductosViewModel
 
@@ -36,6 +36,6 @@ val networkModule = module {
     viewModel { LoginViewModel(get()) }
     viewModel { SesionViewModel(get(), get(), get()) }
     single { ProductoApi(get()) }
-    single<ProductoRepository> { ProductoRepositoryRest(get()) }
+    single<ProductoRepository> { ProductoRepositorioOffline(get(), get(), baseUrl = get(BaseUrlApi)) }
     viewModel { ProductosViewModel(get(), get()) }
 }

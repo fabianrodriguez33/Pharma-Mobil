@@ -1,5 +1,7 @@
 package pe.edu.upeu.pharmamobil.presentation.producto
 
+import pe.edu.upeu.pharmamobil.domain.model.ImagenProducto
+
 data class ProductoUiState(
     val fase: Fase = Fase.Cargando,
     val formulario: FormularioProducto = FormularioProducto(),
@@ -43,7 +45,11 @@ data class FormularioProducto(
     val stock: String = "",
     val nombreError: String? = null,
     val precioError: String? = null,
-    val stockError: String? = null
+    val stockError: String? = null,
+    /** Foto opcional elegida en el formulario; null = sin foto nueva. */
+    val imagen: ImagenProducto? = null,
+    /** Foto actual del producto que se esta editando, solo para mostrarla. */
+    val imagenActual: String = ""
 ) {
 
     val editando: Boolean

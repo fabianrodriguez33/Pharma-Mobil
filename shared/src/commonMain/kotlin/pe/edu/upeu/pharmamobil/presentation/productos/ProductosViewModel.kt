@@ -21,30 +21,57 @@ class ProductosViewModel(
     private val _estado = MutableStateFlow<ProductosUiState>(ProductosUiState.Loading)
     val estado: StateFlow<ProductosUiState> = _estado.asStateFlow()
 
+    private var sincronizando = false
+    private var avisoRed: String? = null
+
     init {
-        cargar()
+        viewModelScope.launch {
+            try {
+                repository.observar().collect { lista ->
+                    productos = lista
+                    publicar()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _estado.value = ProductosUiState.Error(
+                    e.mensajeLegible("No se pudo leer el catálogo guardado")
+                )
+            }
+        }
+        sincronizar()
     }
 
     private var productos: List<Producto> = emptyList()
 
     fun compartir(id: Long) {
-        productos.firstOrNull { it.id == id }?.let { compartidor.compartir(it.comoTextoParaCompartir()) }
+        productos.firstOrNull { it.id == id }?.let { compartidor.compartir(it.comoTextoParaCompartir(), it.imagen.ifBlank { null }) }
     }
 
-    fun cargar() = viewModelScope.launch {
-        _estado.value = ProductosUiState.Loading
+    /** La pantalla lee siempre de la base local; esto solo la refresca desde el servidor. */
+    fun sincronizar() = viewModelScope.launch {
+        sincronizando = true
+        publicar()
         try {
-            _estado.value = ProductosUiState.Success(
-                repository.listar().also { productos = it }.map {
-                    ProductoItemUi(it.id, it.nombre, it.imagen, formatearSoles(it.precio))
-                }
-            )
+            repository.sincronizar()
+            avisoRed = null
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            _estado.value = ProductosUiState.Error(
-                e.mensajeLegible("Error al conectar con el servidor")
-            )
+            avisoRed = "Sin conexión: mostrando datos guardados"
         }
+        sincronizando = false
+        publicar()
+    }
+
+    fun cargar() = sincronizar()
+
+    private fun publicar() {
+        if (_estado.value is ProductosUiState.Loading && productos.isEmpty() && sincronizando) return
+        _estado.value = ProductosUiState.Success(
+            productos.map { ProductoItemUi(it.id, it.nombre, it.imagen, formatearSoles(it.precio)) },
+            sincronizando,
+            avisoRed
+        )
     }
 }

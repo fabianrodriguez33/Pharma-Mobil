@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,7 +27,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Visibility
@@ -78,14 +81,25 @@ private val TealClaro = Color(0xFF45CDB4)
 fun LoginScreen(
     viewModel: LoginViewModel,
     aviso: String? = null,
+    oscuro: Boolean = MaterialTheme.colorScheme.background.luminance() < 0.5f,
+    onAlternarTema: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val ui by viewModel.uiState.collectAsStateWithLifecycle()
-    val oscuro = MaterialTheme.colorScheme.background.luminance() < 0.5f
     val foco = LocalFocusManager.current
     var claveVisible by rememberSaveable { mutableStateOf(false) }
 
     FondoLiquido(oscuro = oscuro, modifier = modifier.fillMaxSize()) {
+        if (onAlternarTema != null) {
+            BotonTema(
+                oscuro = oscuro,
+                onClick = onAlternarTema,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .safeDrawingPadding()
+                    .padding(12.dp)
+            )
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -256,7 +270,7 @@ private fun MarcaLogin(oscuro: Boolean) {
 private fun FondoLiquido(
     oscuro: Boolean,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    content: @Composable BoxScope.() -> Unit
 ) {
     val transicion = rememberInfiniteTransition(label = "fondo-login")
     val deriva by transicion.animateFloat(
@@ -466,6 +480,20 @@ private fun BotonIngresar(
                     fontWeight = FontWeight.SemiBold
                 )
             }
+        }
+    }
+}
+
+/** Interruptor claro/oscuro en vidrio, arriba a la derecha. */
+@Composable
+private fun BotonTema(oscuro: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    PanelVidrio(oscuro = oscuro, shape = RoundedCornerShape(16.dp), modifier = modifier.size(46.dp)) {
+        IconButton(onClick = onClick, modifier = Modifier.fillMaxSize()) {
+            Icon(
+                imageVector = if (oscuro) Icons.Default.LightMode else Icons.Default.DarkMode,
+                contentDescription = if (oscuro) "Cambiar a modo claro" else "Cambiar a modo oscuro",
+                tint = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }

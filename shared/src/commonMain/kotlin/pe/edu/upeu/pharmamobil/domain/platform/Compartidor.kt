@@ -5,5 +5,6 @@ package pe.edu.upeu.pharmamobil.domain.platform
  * Reside en domain y no tiene importaciones de ninguna plataforma.
  */
 interface Compartidor {
-    fun compartir(texto: String)
+    /** [imagenUrl] es opcional: si se indica, la plataforma comparte la foto junto con el texto. */
+    fun compartir(texto: String, imagenUrl: String? = null)
 }

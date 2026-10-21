@@ -6,6 +6,15 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.sqldelight)
+}
+
+sqldelight {
+    databases {
+        create("PharmaDb") {
+            packageName.set("pe.edu.upeu.pharmamobil.db")
+        }
+    }
 }
 
 kotlin {
@@ -47,6 +56,8 @@ kotlin {
             // api: MainApplication (androidApp) usa androidContext() al arrancar Koin.
             api(libs.koin.android)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.sqldelight.android)
+            implementation(libs.androidx.activity.compose)
             // okhttp 5.x exige compileSdk 37; AGP 9.0.1 solo admite hasta 36.
             implementation("com.squareup.okhttp3:okhttp") {
                 version { strictly("4.12.0") }
@@ -54,6 +65,7 @@ kotlin {
         }
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.sqldelight.native)
         }
         commonMain.dependencies {
             // api: androidApp llama a initKoin(), cuya firma expone KoinAppDeclaration.
@@ -75,6 +87,8 @@ kotlin {
             implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.auth)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.sqldelight.runtime)
+            implementation(libs.sqldelight.coroutines)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
         }
@@ -82,6 +96,7 @@ kotlin {
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
             implementation(libs.ktor.client.mock)
+            implementation(libs.sqldelight.jvm)
         }
     }
 }

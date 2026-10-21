@@ -10,6 +10,10 @@ data class ProductoItemUi(
 
 sealed interface ProductosUiState {
     data object Loading : ProductosUiState
-    data class Success(val productos: List<ProductoItemUi>) : ProductosUiState
+    data class Success(
+        val productos: List<ProductoItemUi>,
+        val sincronizando: Boolean = false,
+        val avisoRed: String? = null
+    ) : ProductosUiState
     data class Error(val mensaje: String) : ProductosUiState
 }

@@ -5,6 +5,9 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
+import pe.edu.upeu.pharmamobil.data.local.CreadorDeDriver
+import pe.edu.upeu.pharmamobil.data.local.ProductoLocal
+import pe.edu.upeu.pharmamobil.db.PharmaDb
 import pe.edu.upeu.pharmamobil.data.repository.ClienteRepositorioEnMemoria
 import pe.edu.upeu.pharmamobil.domain.repository.ClienteRepository
 import pe.edu.upeu.pharmamobil.domain.usecase.ActualizarProductoUseCase
@@ -13,11 +16,14 @@ import pe.edu.upeu.pharmamobil.domain.usecase.ListarClientesUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarClienteUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
+import pe.edu.upeu.pharmamobil.domain.usecase.SubirImagenProductoUseCase
 import pe.edu.upeu.pharmamobil.presentation.cliente.ClienteViewModel
 import pe.edu.upeu.pharmamobil.presentation.producto.ProductoViewModel
 
 
 val dataModule = module {
+    single { PharmaDb(get<CreadorDeDriver>().crear()) }
+    single { ProductoLocal(get()) }
     single<ClienteRepository> { ClienteRepositorioEnMemoria() }
 }
 
@@ -26,12 +32,13 @@ val domainModule = module {
     factory { ListarProductosUseCase(get()) }
     factory { ActualizarProductoUseCase(get()) }
     factory { EliminarProductoUseCase(get()) }
+    factory { SubirImagenProductoUseCase(get()) }
     factory { RegistrarClienteUseCase(get()) }
     factory { ListarClientesUseCase(get()) }
 }
 
 val presentationModule = module {
-    viewModel { ProductoViewModel(get(), get(), get(), get()) }
+    viewModel { ProductoViewModel(get(), get(), get(), get(), get()) }
     viewModel { ClienteViewModel(get(), get()) }
 }
 

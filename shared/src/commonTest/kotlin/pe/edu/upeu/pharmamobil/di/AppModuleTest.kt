@@ -1,5 +1,6 @@
 package pe.edu.upeu.pharmamobil.di
 
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -9,11 +10,13 @@ import org.koin.core.Koin
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
 import org.koin.dsl.module
+import pe.edu.upeu.pharmamobil.data.local.CreadorDeDriver
+import pe.edu.upeu.pharmamobil.db.PharmaDb
 import pe.edu.upeu.pharmamobil.domain.platform.AlmacenSeguro
 import pe.edu.upeu.pharmamobil.domain.repository.AuthRepository
 import pe.edu.upeu.pharmamobil.data.repository.AuthRepositoryRest
 import pe.edu.upeu.pharmamobil.data.repository.ClienteRepositorioEnMemoria
-import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositoryRest
+import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositorioOffline
 import pe.edu.upeu.pharmamobil.domain.repository.ClienteRepository
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarClientesUseCase
@@ -52,7 +55,7 @@ class AppModuleTest {
     }
 
     private fun grafoCompleto(): Koin = startKoin {
-        modules(dataModule, domainModule, presentationModule, networkModule, platformModule, almacenDePrueba)
+        modules(dataModule, domainModule, presentationModule, networkModule, platformModule, almacenDePrueba, driverDePrueba)
     }.koin
 
     /** El Keystore real necesita un Context de Android; en JVM se sustituye por memoria. */
@@ -70,12 +73,22 @@ class AppModuleTest {
         }
     }
 
+    /** SQLite en memoria en lugar del driver de Android, que necesita un Context. */
+    private val driverDePrueba = module {
+        single<CreadorDeDriver> {
+            object : CreadorDeDriver {
+                override fun crear() = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+                    .also { PharmaDb.Schema.create(it) }
+            }
+        }
+    }
+
     @Test
     fun resuelveLosRepositoriosPorSuInterfazDeDominio() {
 
         val koin = grafoCompleto()
 
-        assertIs<ProductoRepositoryRest>(koin.get<ProductoRepository>())
+        assertIs<ProductoRepositorioOffline>(koin.get<ProductoRepository>())
         assertIs<ClienteRepositorioEnMemoria>(koin.get<ClienteRepository>())
         assertIs<AuthRepositoryRest>(koin.get<AuthRepository>())
     }
