@@ -1,0 +1,4 @@
+1 Paracetamol 500mg 12.5 40 True
+43 Matriz 001812 2.5 10 True
+44 Almacen 001831 3 5 True
+47 Ibuprofeno_Offline 4.5 25 True

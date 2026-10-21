@@ -21,6 +21,7 @@ class ProductosViewModel(
     private val _estado = MutableStateFlow<ProductosUiState>(ProductosUiState.Loading)
     val estado: StateFlow<ProductosUiState> = _estado.asStateFlow()
 
+    private var productos: List<Producto> = emptyList()
     private var sincronizando = false
     private var avisoRed: String? = null
 
@@ -41,8 +42,6 @@ class ProductosViewModel(
         }
         sincronizar()
     }
-
-    private var productos: List<Producto> = emptyList()
 
     fun compartir(id: Long) {
         productos.firstOrNull { it.id == id }?.let { compartidor.compartir(it.comoTextoParaCompartir(), it.imagen.ifBlank { null }) }
