@@ -8,7 +8,12 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.test.runTest
 import pe.edu.upeu.pharmamobil.data.local.ProductoLocal
 import pe.edu.upeu.pharmamobil.data.remote.ProductoApi
@@ -16,11 +21,19 @@ import pe.edu.upeu.pharmamobil.data.remote.crearHttpClient
 import pe.edu.upeu.pharmamobil.data.repository.ProductoRepositorioOffline
 import pe.edu.upeu.pharmamobil.db.PharmaDb
 import pe.edu.upeu.pharmamobil.domain.model.Producto
+import pe.edu.upeu.pharmamobil.domain.usecase.ActualizarProductoUseCase
+import pe.edu.upeu.pharmamobil.domain.usecase.EliminarProductoUseCase
+import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
+import pe.edu.upeu.pharmamobil.domain.usecase.ObservarProductosUseCase
+import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
+import pe.edu.upeu.pharmamobil.presentation.producto.ProductoUiState
+import pe.edu.upeu.pharmamobil.presentation.producto.ProductoViewModel
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ProductoRepositorioOfflineTest {
 
     private val json = headersOf(HttpHeaders.ContentType, "application/json")
@@ -91,5 +104,30 @@ class ProductoRepositorioOfflineTest {
         assertFailsWith<Exception> { repo.sincronizar() }
 
         assertEquals(listOf("Aspirina"), repo.observar().first().map { it.nombre })
+    }
+
+    @Test
+    fun elViewModelMuestraLoRegistradoSinRecargarAMano() = runTest {
+        Dispatchers.setMain(UnconfinedTestDispatcher())
+        try {
+            val repo = repositorio(crearBase(), servidorCaido)
+            val viewModel = ProductoViewModel(
+                registrarProducto = RegistrarProductoUseCase(repo),
+                listarProductos = ListarProductosUseCase(repo),
+                actualizarProducto = ActualizarProductoUseCase(repo),
+                eliminarProducto = EliminarProductoUseCase(repo),
+                observarProductos = ObservarProductosUseCase(repo)
+            )
+            viewModel.onNombreChange("Paracetamol")
+            viewModel.onPrecioChange("2.5")
+            viewModel.onStockChange("20")
+
+            viewModel.guardar()
+
+            val fase = viewModel.uiState.first { it.fase is ProductoUiState.Fase.ConProductos }.fase
+            assertEquals(1, (fase as ProductoUiState.Fase.ConProductos).productos.size)
+        } finally {
+            Dispatchers.resetMain()
+        }
     }
 }

@@ -14,6 +14,7 @@ import pe.edu.upeu.pharmamobil.domain.usecase.ActualizarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.EliminarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarClientesUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
+import pe.edu.upeu.pharmamobil.domain.usecase.ObservarProductosUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarClienteUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.SubirImagenProductoUseCase
@@ -30,6 +31,7 @@ val dataModule = module {
 val domainModule = module {
     factory { RegistrarProductoUseCase(get()) }
     factory { ListarProductosUseCase(get()) }
+    factory { ObservarProductosUseCase(get()) }
     factory { ActualizarProductoUseCase(get()) }
     factory { EliminarProductoUseCase(get()) }
     factory { SubirImagenProductoUseCase(get()) }
@@ -38,7 +40,7 @@ val domainModule = module {
 }
 
 val presentationModule = module {
-    viewModel { ProductoViewModel(get(), get(), get(), get(), get()) }
+    viewModel { ProductoViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ClienteViewModel(get(), get()) }
 }
 

@@ -244,3 +244,18 @@ Incluye `LoginViewModelTest` (login correcto, credenciales inválidas, campos va
 
 ### Verificación (Actividad Autónoma 10)
 Bitácora de los 6 escenarios de token, evidencia del almacenamiento seguro, cierre de sesión y matriz por rol en `docs/entrega/S10_ActividadAutonoma_RodriguezBazan.docx` (capturas y script generador en `docs/actividad10/`).
+
+## Persistencia offline-first
+
+La base SQLite local (`pharma.db`, gestionada con SQLDelight) es la única fuente de verdad del catálogo; la red solo sincroniza.
+
+- **Esquema:** `shared/src/commonMain/sqldelight/.../db/Producto.sq`. La columna `pendiente` marca lo creado sin red (`1`) frente a lo sincronizado (`0`).
+- **Drivers:** `CreadorDeDriver` con `AndroidSqliteDriver`, `NativeSqliteDriver` (iOS) y `JdbcSqliteDriver` en memoria para las pruebas.
+- **Capa local:** `ProductoLocal` expone `observar(): Flow<List<Producto>>`; no importa Ktor ni DTOs.
+- **Repositorio:** `ProductoRepositorioOffline`. `registrar()` guarda con id local negativo y `pendiente = 1`; `sincronizar()` **sube primero los pendientes** y luego descarga y reemplaza los sincronizados dentro de una transacción.
+- **Pantallas:** `ProductosViewModel` y `ProductoViewModel` recogen el `Flow` de la base y no recargan la lista a mano. Sin red se muestra «Sin conexión: mostrando datos guardados».
+- **Pruebas:** `ProductoRepositorioOfflineTest` (`commonTest`, `JdbcSqliteDriver` + `MockEngine`).
+
+```bash
+./gradlew testAndroidHostTest assembleDebug
+```

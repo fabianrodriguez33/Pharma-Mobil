@@ -2,6 +2,7 @@ package pe.edu.upeu.pharmamobil.presentation.producto
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,6 +13,7 @@ import pe.edu.upeu.pharmamobil.domain.error.ErrorApiException
 import pe.edu.upeu.pharmamobil.domain.usecase.ActualizarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.EliminarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ListarProductosUseCase
+import pe.edu.upeu.pharmamobil.domain.usecase.ObservarProductosUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.ProductoInvalidoException
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.SubirImagenProductoUseCase
@@ -25,14 +27,45 @@ class ProductoViewModel(
     private val listarProductos: ListarProductosUseCase,
     private val actualizarProducto: ActualizarProductoUseCase,
     private val eliminarProducto: EliminarProductoUseCase,
-    private val subirImagen: SubirImagenProductoUseCase? = null
+    private val subirImagen: SubirImagenProductoUseCase? = null,
+    /** Con él la lista sale de la base local vía Flow y no se recarga a mano. */
+    private val observarProductos: ObservarProductosUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProductoUiState())
     val uiState: StateFlow<ProductoUiState> = _uiState.asStateFlow()
 
     init {
-        cargarProductos()
+        if (observarProductos != null) {
+            viewModelScope.launch {
+                try {
+                    observarProductos().collect { productos ->
+                        _uiState.update {
+                            it.copy(
+                                fase = if (productos.isEmpty()) {
+                                    ProductoUiState.Fase.SinProductos
+                                } else {
+                                    ProductoUiState.Fase.ConProductos(productos.map { p -> p.aUi() })
+                                }
+                            )
+                        }
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    _uiState.update {
+                        it.copy(fase = ProductoUiState.Fase.Error(e.mensajeLegible("No se pudo cargar el inventario")))
+                    }
+                }
+            }
+        } else {
+            cargarProductos()
+        }
+    }
+
+    /** Con Flow la pantalla reacciona sola al cambio de la base; sin él se recarga a mano. */
+    private fun recargar() {
+        if (observarProductos == null) cargarProductos()
     }
 
     fun cargarProductos() {
@@ -169,7 +202,7 @@ class ProductoViewModel(
                                 formulario = FormularioProducto()
                             )
                         }
-                        cargarProductos()
+                        recargar()
                         return@fold
                     }
                     _uiState.update {
@@ -179,7 +212,7 @@ class ProductoViewModel(
                             mensajeExito = "Producto \"${producto.nombre}\" $verbo correctamente"
                         )
                     }
-                    cargarProductos()
+                    recargar()
                 },
                 onFailure = { fallo -> _uiState.update { it.conFallo(fallo, tipo) } }
             )
@@ -205,7 +238,7 @@ class ProductoViewModel(
                             mensajeExito = "Producto eliminado correctamente"
                         )
                     }
-                    cargarProductos()
+                    recargar()
                 },
                 onFailure = { fallo -> _uiState.update { it.conFallo(fallo, Tipo.Eliminar) } }
             )
