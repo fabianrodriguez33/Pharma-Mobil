@@ -125,6 +125,15 @@ def texto_de(archivo):
         return f.read().rstrip("\n")
 
 
+def conclusion(texto):
+    par = doc.add_paragraph()
+    par.paragraph_format.space_after = Pt(8)
+    r1 = par.add_run("Conclusión: ")
+    r1.bold = True
+    r1.font.color.rgb = NAVY
+    par.add_run(texto)
+
+
 def salto():
     doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
 
@@ -142,8 +151,9 @@ p("PRUEBAS UNITARIAS EN COMMONTEST Y EVIDENCIA DE ESCENARIOS OFFLINE-FIRST EN PH
   negrita=True, size=14, align=WD_ALIGN_PARAGRAPH.CENTER, color=NAVY, after=50)
 tabla([
     ["Estudiante", "Julio Fabián Rodríguez Bazán"],
+    ["Sesión", "Sesión 11 — Persistencia local con SQLDelight y offline-first"],
     ["Repositorio GitHub", "https://github.com/fabianrodriguez33/Pharma-Mobil"],
-    ["Rama", "feature/offline-first-rodriguez"],
+    ["Rama entregada", "https://github.com/fabianrodriguez33/Pharma-Mobil/tree/feature/offline-first-rodriguez"],
     ["Fecha de entrega", "26/10/2026"],
 ], [4.5, 11.5], size=11)
 salto()
@@ -206,7 +216,11 @@ vineta("Con datos ya sincronizados, activar Modo Avión y cerrar la app por comp
 vineta("Abrir PharmaMobil y entrar a Catálogo.")
 p("Resultado observado: el catálogo se lista desde SQLite (3 productos) y aparece el aviso «Sin conexión: mostrando "
   "datos guardados» junto con la antigüedad de los datos. No hay pantalla en blanco ni error.", negrita=False)
+p("Estado de la base local: filas sincronizadas ids 1, 43 y 44, todas con pendiente = 0 (las mismas que muestra la "
+  "extracción del Escenario 2, sin la fila -1), más la marca de la última sincronización.")
 fotos([("s1_apertura_sin_red.png", "Figura 1. Catálogo en Modo Avión con aviso y «Actualizado hace 12 minutos».")])
+conclusion("La pantalla no depende de la red para existir: lee de pharma.db y el servidor solo la refresca. "
+           "Lo importante es que el fallo de sincronización se comunica (aviso en rojo) sin vaciar el catálogo.")
 
 doc.add_heading("Escenario 2 — Registro en Modo Avión", 2)
 p("Pasos:", negrita=True)
@@ -216,6 +230,8 @@ p("Resultado observado: aparece de inmediato en la lista (4 productos) sin recar
 mono(texto_de("s2_base_local.txt"), size=9)
 doc.add_paragraph()
 fotos([("s2_registro_modo_avion.png", "Figura 2. Producto registrado sin red y visible al instante.")])
+conclusion("El alta se confirma contra la base local, no contra el servidor: el usuario no espera ni pierde su trabajo. "
+           "El id negativo es lo que permite distinguir lo local de lo definitivo sin chocar con los ids de PharmaSoft.")
 
 doc.add_heading("Escenario 3 — Reconexión y sincronización exitosa", 2)
 p("Pasos:", negrita=True)
@@ -230,6 +246,9 @@ fotos([
     ("s3b_tras_sincronizar.png", "Figura 3. Tras reconectar: «Actualizado hace un momento»."),
     ("s3c_swagger.jpg", "Figura 4. Swagger UI: GET /api/v1/productos (200) con id 48."),
 ], ancho=7.0)
+conclusion("El orden «subir antes de bajar» se cumple en la práctica: el pendiente llegó al servidor con su edición "
+           "incluida y la bajada posterior no lo borró. Swagger confirma que el dato existe del lado del servidor, no "
+           "solo en el teléfono.")
 
 doc.add_heading("Escenario 4 — Sincronización con token vencido", 2)
 p("Para provocar un vencimiento real se reinició PharmaSoft con app.jwt.expiracion-minutos = 1 (el login devolvió "
@@ -251,9 +270,14 @@ fotos([
     ("s4a_sesion_vencida.png", "Figura 5. Aviso de sesión vencida tras el 401."),
     ("s4b_tras_relogin.png", "Figura 6. Tras reingresar: pendiente enviado y catálogo actualizado."),
 ])
+p("Estado de la base local: las extracciones de la tabla anterior (antes del 401, tras el 401 y tras reingresar) "
+  "se tomaron con «adb run-as … cat databases/pharma.db».")
 p("Diseño: el cierre de sesión solo borra el token y el perfil (AlmacenSeguro); la base pharma.db no se toca, por eso "
   "lo pendiente sobrevive. Además, si el 401 llegara a la pantalla de catálogo el aviso diría «Sesión vencida… tus "
   "cambios pendientes siguen guardados».")
+conclusion("Un 401 es un problema de identidad, no de datos: la app pide reautenticar pero jamás toca pharma.db. "
+           "Separar la sesión (AlmacenSeguro) de los datos (SQLite) es lo que garantiza que el trabajo pendiente "
+           "sobreviva a un token vencido.")
 
 doc.add_heading("Escenario 5 — Edición y eliminación sin red", 2)
 p("Pasos y resultados (Modo Avión activo):", negrita=True)
@@ -262,12 +286,23 @@ tabla([
     ["Eliminar un producto ya sincronizado (Almacen 001831)", "Mensaje «Sin conexión con el servidor»; el producto permanece; nada cambia"],
     ["Editar un producto ya sincronizado (S/ 3.00 → 3.50)", "Mismo mensaje; el precio sigue en S/ 3.00"],
     ["Editar un producto pendiente (Amoxicilina_Offline 6.80 → 7.20)", "Se aplica al instante en local; al reconectar viaja en el POST (el servidor guardó 7.20)"],
+    ["Eliminar un producto pendiente (Esc5_Pendiente)", "«Producto eliminado correctamente»; la fila desaparece de SQLite y nunca llega al servidor"],
 ], [7.0, 9.0])
 fotos([
     ("s5a_eliminar_sincronizado_sin_red.png", "Figura 7. Eliminar un registro sincronizado sin red."),
     ("s5c_editar_sincronizado_sin_red.png", "Figura 8. Editar un registro sincronizado sin red."),
     ("s5b_editar_pendiente_sin_red.png", "Figura 9. Editar un pendiente: se aplica en local (S/ 7.20)."),
 ], ancho=4.9)
+fotos([("s5d_eliminar_pendiente_sin_red.png", "Figura 10. Eliminar un pendiente sin red.")], ancho=5.2)
+p("Estado de la base local en cada paso (extraído de pharma.db):", negrita=True)
+for titulo, arch in (
+        ("a) Se crea el pendiente Esc5_Pendiente en Modo Avión", "s5_base_1_pendiente_creado.txt"),
+        ("b) Tras intentar eliminar el sincronizado «Almacen 001831»: nada cambia", "s5_base_2_tras_intentar_eliminar_sincronizado.txt"),
+        ("c) Tras editar el pendiente (5.0 → 5.5)", "s5_base_3_pendiente_editado.txt"),
+        ("d) Tras eliminar el pendiente: la fila -1 desaparece", "s5_base_4_pendiente_eliminado.txt")):
+    p(titulo, cursiva=True, after=2)
+    mono(texto_de(arch), size=8.5)
+    doc.add_paragraph().paragraph_format.space_after = Pt(2)
 p("Argumentación técnica de la estrategia:", negrita=True)
 vineta("Registros pendientes (id negativo): solo existen en el dispositivo, así que editarlos o eliminarlos es una "
        "operación local sobre una fila con pendiente = 1; el POST posterior ya lleva el estado final. No hay conflicto posible.")
@@ -279,8 +314,12 @@ vineta("¿Es correcto? Es seguro y consistente: no hay datos perdidos, ni estado
 vineta("Mejora recomendada (fuera del alcance): una tabla outbox de operaciones pendientes (CREATE/UPDATE/DELETE) con "
        "lápidas para las bajas y resolución de conflictos por fechaModificacion/versión, ejecutada con el mismo orden "
        "«subir antes de bajar».")
-vineta("Nota de verificación: la eliminación de un pendiente (borrado local de la fila con id < 0) está implementada y "
-       "cubierta por el diseño del repositorio, pero no se ejercitó en el emulador.")
+vineta("Verificado en el emulador: eliminar un pendiente borra la fila local (id < 0) sin llamar a la red; el estado de "
+       "la base se muestra arriba en los pasos a–d.")
+conclusion("El comportamiento es coherente pero asimétrico: lo que nació en el teléfono se gobierna en el teléfono, y lo "
+           "que nació en el servidor solo cambia con permiso del servidor. Lo considero correcto como política de "
+           "consistencia (nunca hay datos perdidos ni divergentes) e incompleto como experiencia offline: la siguiente "
+           "mejora real sería la cola de operaciones.")
 salto()
 
 # ───────────────────────── 4. PRODUCTO 3 ─────────────────────────
@@ -300,14 +339,17 @@ doc.add_heading("Evidencia", 2)
 p("Para los estados con antigüedad se modificó la marca en pharma.db con la app cerrada y en Modo Avión (para que la app no "
   "re-sincronizara al abrir).", cursiva=True)
 fotos([
-    ("e0_nunca_sincronizado.png", "Figura 10. Estado inicial: «Nunca sincronizado»."),
-    ("e1_actualizado_reciente.png", "Figura 11. Datos recientes: «hace un momento»."),
-    ("e2_hace_12_minutos.png", "Figura 12. «Actualizado hace 12 minutos»."),
+    ("e0_nunca_sincronizado.png", "Figura 11. Estado inicial: «Nunca sincronizado»."),
+    ("e1_actualizado_reciente.png", "Figura 12. Datos recientes: «hace un momento»."),
+    ("e2_hace_12_minutos.png", "Figura 13. «Actualizado hace 12 minutos»."),
 ], ancho=4.9)
 fotos([
-    ("e3_hoy_a_las.png", "Figura 13. «Actualizado hoy a las 17:19» (3 h)."),
-    ("e4_fecha_antigua.png", "Figura 14. «Actualizado el 20/10 a las 18:20» (más de 1 día)."),
+    ("e3_hoy_a_las.png", "Figura 14. «Actualizado hoy a las 17:19» (3 h)."),
+    ("e4_fecha_antigua.png", "Figura 15. «Actualizado el 20/10 a las 18:20» (más de 1 día)."),
 ], ancho=4.9)
+conclusion("Guardar la marca junto a los datos hace que el indicador nunca mienta: se actualiza en la misma "
+           "transacción lógica que la sincronización exitosa y un intento fallido no la mueve. El caso «Nunca "
+           "sincronizado» evita mostrar una fecha vacía o inventada.")
 salto()
 
 # ───────────────────────── 5. PRODUCTO 4 ─────────────────────────
@@ -372,5 +414,35 @@ vineta("Las 6 pruebas del enunciado y la suite completa (80) pasan; el build ter
 vineta("Limitaciones: edición/baja de registros ya sincronizados sin red; iOS no se compiló ni ejecutó (entorno Windows); "
        "la foto de un producto creado sin red solo puede subirse tras sincronizar.")
 
+doc.add_heading("7. Lista de cotejo previa a la entrega", 1)
+tabla([
+    ["N.º", "Criterio observable", "Cumple"],
+    ["1", "Documento en PDF nombrado S11_ActividadAutonoma_RodriguezBazan.pdf", "Sí"],
+    ["2", "Portada con nombre completo, sesión, fecha y enlace a la rama", "Sí"],
+    ["3", "Las seis pruebas están en commonTest y todas pasan", "Sí"],
+    ["4", "Se adjunta la salida completa de la ejecución de las pruebas", "Sí"],
+    ["5", "La bitácora contiene los cinco escenarios con su captura", "Sí"],
+    ["6", "El escenario 3 incluye la evidencia tomada desde Swagger", "Sí (Figura 4)"],
+    ["7", "El escenario 5 argumenta si el comportamiento es el correcto", "Sí"],
+    ["8", "La pantalla muestra cuándo fue la última sincronización correcta", "Sí (Figuras 11–15)"],
+    ["9", "Se resolvió el caso de una aplicación que nunca ha sincronizado", "Sí (Figura 11)"],
+    ["10", "El guion cubre los cinco criterios del Producto U2", "Sí"],
+    ["11", "Los commits están en mi rama y son accesibles desde el enlace entregado", "Sí"],
+], [1.0, 11.0, 4.0])
+
 doc.save(SALIDA)
 print(SALIDA)
+
+# PDF para el aula virtual (convierte con Word si está instalado).
+import subprocess
+
+PDF = SALIDA[:-5] + ".pdf"
+ps = (
+    "$w = New-Object -ComObject Word.Application; $w.Visible = $false; "
+    f"$d = $w.Documents.Open('{SALIDA}'); $d.SaveAs([ref]'{PDF}', [ref]17); $d.Close(); $w.Quit()"
+)
+try:
+    subprocess.run(["powershell", "-NoProfile", "-Command", ps], check=True, timeout=300)
+    print(PDF)
+except Exception as e:  # sin Word queda solo el .docx
+    print("No se pudo generar el PDF:", e)
