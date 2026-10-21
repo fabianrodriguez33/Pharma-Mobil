@@ -67,8 +67,7 @@ class ProductoRepositorioOffline(
     /** Primero sube lo pendiente; invertir el orden borraría lo creado sin red. */
     override suspend fun sincronizar() = traducirErrores {
         subirPendientes()
-        val remotos = remoto.listar(0, TAMANIO_DESCARGA).contenido.toDomainValidos(baseUrl)
-        local.reemplazarSincronizados(remotos)
+        local.reemplazarSincronizados(descargarTodo())
     }
 
     private suspend fun subirPendientes() {
@@ -78,7 +77,19 @@ class ProductoRepositorioOffline(
         }
     }
 
+    /** El backend limita el tamaño de página a 100: se recorren todas. */
+    private suspend fun descargarTodo(): List<Producto> {
+        val todos = mutableListOf<Producto>()
+        var pagina = 0
+        do {
+            val respuesta = remoto.listar(pagina, TAMANIO_PAGINA)
+            todos += respuesta.contenido.toDomainValidos(baseUrl)
+            pagina++
+        } while (!respuesta.ultima)
+        return todos
+    }
+
     private companion object {
-        const val TAMANIO_DESCARGA = 1000
+        const val TAMANIO_PAGINA = 100
     }
 }

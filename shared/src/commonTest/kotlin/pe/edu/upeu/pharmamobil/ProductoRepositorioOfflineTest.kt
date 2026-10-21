@@ -40,7 +40,7 @@ class ProductoRepositorioOfflineTest {
     private val metodos = mutableListOf<HttpMethod>()
 
     private fun pagina(vararg filas: String) =
-        """{"contenido":[${filas.joinToString(",")}],"pagina":0,"tamanio":1000,""" +
+        """{"contenido":[${filas.joinToString(",")}],"pagina":0,"tamanio":100,""" +
             """"totalElementos":${filas.size},"totalPaginas":1,"ultima":true}"""
 
     private fun fila(id: Long, nombre: String) =
