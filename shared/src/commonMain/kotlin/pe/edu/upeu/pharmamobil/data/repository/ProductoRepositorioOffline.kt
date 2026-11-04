@@ -1,9 +1,9 @@
 package pe.edu.upeu.pharmamobil.data.repository
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import pe.edu.upeu.pharmamobil.data.local.ProductoLocal
 import pe.edu.upeu.pharmamobil.data.mapper.toDomain
-import pe.edu.upeu.pharmamobil.data.mapper.toDomainValidos
 import pe.edu.upeu.pharmamobil.data.mapper.toRequestDto
 import pe.edu.upeu.pharmamobil.data.remote.ProductoApi
 import pe.edu.upeu.pharmamobil.domain.error.ErrorApi
@@ -11,7 +11,9 @@ import pe.edu.upeu.pharmamobil.domain.error.ErrorApiException
 import pe.edu.upeu.pharmamobil.domain.error.traducirErrores
 import pe.edu.upeu.pharmamobil.domain.model.ImagenProducto
 import pe.edu.upeu.pharmamobil.domain.model.Producto
+import pe.edu.upeu.pharmamobil.domain.model.ProductoPendiente
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
+import pe.edu.upeu.pharmamobil.domain.usecase.SincronizarUseCase
 import kotlin.time.Clock
 
 /** La base local es la única fuente de verdad; la red solo sincroniza. */
@@ -20,8 +22,15 @@ class ProductoRepositorioOffline(
     private val remoto: ProductoApi,
     private val categoriaPorDefectoId: Long = 1L,
     private val baseUrl: String = "",
-    private val ahora: () -> Long = { Clock.System.now().toEpochMilliseconds() }
+    private val ahora: () -> Long = { Clock.System.now().toEpochMilliseconds() },
+    esperar: suspend (Long) -> Unit = { delay(it) }
 ) : ProductoRepository {
+
+    private val sincronizarCaso = SincronizarUseCase(
+        local = local,
+        remoto = EnvioRepositorioRest(remoto, categoriaPorDefectoId, baseUrl),
+        esperar = esperar
+    )
 
     override fun observar(): Flow<List<Producto>> = local.observar()
 
@@ -35,7 +44,7 @@ class ProductoRepositorioOffline(
     override suspend fun registrar(producto: Producto): Producto {
         val guardado = local.guardarPendiente(producto)
         try {
-            sincronizar()
+            ejecutarSincronizacion(conEspera = false)
         } catch (_: Exception) {
             // Sin red: la fila queda guardada con pendiente = 1
         }
@@ -69,32 +78,21 @@ class ProductoRepositorioOffline(
     }
 
     /** Primero sube lo pendiente; invertir el orden borraría lo creado sin red. */
-    override suspend fun sincronizar() = traducirErrores {
-        subirPendientes()
-        local.reemplazarSincronizados(descargarTodo())
+    override suspend fun sincronizar() = ejecutarSincronizacion(conEspera = true)
+
+    override fun observarPendientes(): Flow<Int> = local.observarPendientes(SincronizarUseCase.MAX_INTENTOS)
+
+    override fun observarFallidas(): Flow<Int> = local.observarFallidas(SincronizarUseCase.MAX_INTENTOS)
+
+    override suspend fun fallidas(): List<ProductoPendiente> = local.fallidas(SincronizarUseCase.MAX_INTENTOS)
+
+    override suspend fun reintentarFallidas() {
+        local.reintentarFallidas(SincronizarUseCase.MAX_INTENTOS)
+        ejecutarSincronizacion(conEspera = true)
+    }
+
+    private suspend fun ejecutarSincronizacion(conEspera: Boolean) = traducirErrores {
+        sincronizarCaso(conEspera)
         local.guardarUltimaSincronizacion(ahora())
-    }
-
-    private suspend fun subirPendientes() {
-        local.pendientes().forEach { producto ->
-            val creado = remoto.crear(producto.toRequestDto(categoriaPorDefectoId)).toDomain(baseUrl)
-            local.confirmarPendiente(producto.id, creado)
-        }
-    }
-
-    /** El backend limita el tamaño de página a 100: se recorren todas. */
-    private suspend fun descargarTodo(): List<Producto> {
-        val todos = mutableListOf<Producto>()
-        var pagina = 0
-        do {
-            val respuesta = remoto.listar(pagina, TAMANIO_PAGINA)
-            todos += respuesta.contenido.toDomainValidos(baseUrl)
-            pagina++
-        } while (!respuesta.ultima)
-        return todos
-    }
-
-    private companion object {
-        const val TAMANIO_PAGINA = 100
     }
 }

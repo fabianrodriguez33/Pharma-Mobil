@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import pe.edu.upeu.pharmamobil.domain.model.ImagenProducto
 import pe.edu.upeu.pharmamobil.domain.model.Producto
+import pe.edu.upeu.pharmamobil.domain.model.ProductoPendiente
 
 interface ProductoRepository {
 
@@ -13,6 +14,18 @@ interface ProductoRepository {
 
     /** Marca de tiempo (epoch millis) de la última sincronización exitosa; null si nunca hubo. */
     fun ultimaSincronizacion(): Flow<Long?> = flowOf(null)
+
+    /** Cambios que faltan por enviar y aun tienen intentos disponibles. */
+    fun observarPendientes(): Flow<Int> = flowOf(0)
+
+    /** Cambios que agotaron sus intentos y esperan una decision del usuario. */
+    fun observarFallidas(): Flow<Int> = flowOf(0)
+
+    /** Detalle de las filas fallidas, con el motivo del ultimo error. */
+    suspend fun fallidas(): List<ProductoPendiente> = emptyList()
+
+    /** Devuelve las filas fallidas a la cola y sincroniza de nuevo. */
+    suspend fun reintentarFallidas() {}
 
     /** Sube lo pendiente y luego descarga el catálogo del servidor. */
     suspend fun sincronizar() {}
