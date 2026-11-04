@@ -16,6 +16,7 @@ import pe.edu.upeu.pharmamobil.domain.error.ErrorApiException
 import pe.edu.upeu.pharmamobil.domain.model.Producto
 import pe.edu.upeu.pharmamobil.domain.model.ProductoPendiente
 import pe.edu.upeu.pharmamobil.domain.platform.Compartidor
+import pe.edu.upeu.pharmamobil.domain.port.Telemetria
 import pe.edu.upeu.pharmamobil.domain.repository.ProductoRepository
 import pe.edu.upeu.pharmamobil.platform.formatearSoles
 import pe.edu.upeu.pharmamobil.presentation.producto.mensajeLegible
@@ -24,7 +25,8 @@ import kotlin.time.Clock
 
 class ProductosViewModel(
     private val repository: ProductoRepository,
-    private val compartidor: Compartidor
+    private val compartidor: Compartidor,
+    private val telemetria: Telemetria
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow<ProductosUiState>(ProductosUiState.Loading)
@@ -112,11 +114,14 @@ class ProductosViewModel(
             avisoRed = null
             sinConexion.value = false
             _detalleFallidas.value = emptyList()
+            telemetria.registrarEvento("sincronizacion_completada", mapOf("pantalla" to "catalogo"))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            sinConexion.value = true
-            avisoRed = if ((e as? ErrorApiException)?.error == ErrorApi.NoAutenticado) {
+            val error = (e as? ErrorApiException)?.error
+            sinConexion.value = error != ErrorApi.NoAutenticado
+            registrarFallo(e, error)
+            avisoRed = if (error == ErrorApi.NoAutenticado) {
                 "Sesión vencida: inicia sesión de nuevo. Tus cambios pendientes siguen guardados"
             } else {
                 "Sin conexión: mostrando datos guardados"
@@ -128,6 +133,20 @@ class ProductosViewModel(
     }
 
     fun cargar() = sincronizar()
+
+    /** Solo contexto tecnico: ni datos del usuario ni el token. */
+    private fun registrarFallo(e: Exception, error: ErrorApi?) {
+        val contexto = mapOf(
+            "pantalla" to "catalogo",
+            "operacion" to "sincronizar",
+            "error" to (error?.let { it::class.simpleName } ?: "desconocido")
+        )
+        when (error) {
+            ErrorApi.SinConexion, ErrorApi.TiempoAgotado, ErrorApi.NoAutenticado ->
+                telemetria.registrarEvento("sincronizacion_fallida", contexto)
+            else -> telemetria.registrarError(e, contexto)
+        }
+    }
 
     private fun publicar() {
         if (_estado.value is ProductosUiState.Loading && productos.isEmpty() && sincronizando) return

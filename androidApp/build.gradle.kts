@@ -5,6 +5,14 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+// google-services.json se descarga de la consola de Firebase y NO se versiona
+// (cada integrante usa su propio proyecto). Sin el archivo la aplicacion compila
+// y corre igual: la telemetria queda inactiva.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+    apply(plugin = "com.google.firebase.crashlytics")
+}
+
 kotlin {
     compilerOptions {
         jvmTarget = JvmTarget.JVM_11

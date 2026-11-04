@@ -37,5 +37,5 @@ val networkModule = module {
     viewModel { SesionViewModel(get(), get(), get()) }
     single { ProductoApi(get()) }
     single<ProductoRepository> { ProductoRepositorioOffline(get(), get(), baseUrl = get(BaseUrlApi)) }
-    viewModel { ProductosViewModel(get(), get()) }
+    viewModel { ProductosViewModel(get(), get(), get()) }
 }

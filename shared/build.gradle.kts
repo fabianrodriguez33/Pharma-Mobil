@@ -91,6 +91,10 @@ kotlin {
             implementation(libs.sqldelight.coroutines)
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
+            // El SDK solo se usa en data/firebase, detras de la interfaz Telemetria del dominio.
+            implementation(libs.gitlive.crashlytics)
+            implementation(libs.gitlive.analytics)
+            implementation(libs.gitlive.messaging)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
