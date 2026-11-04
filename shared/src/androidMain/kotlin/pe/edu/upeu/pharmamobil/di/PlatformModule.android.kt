@@ -1,5 +1,6 @@
 package pe.edu.upeu.pharmamobil.di
 
+import android.content.Context
 import android.os.Build
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.okhttp.OkHttp
@@ -9,9 +10,11 @@ import org.koin.dsl.module
 import pe.edu.upeu.pharmamobil.data.local.CreadorDeDriver
 import pe.edu.upeu.pharmamobil.data.local.CreadorDeDriverAndroid
 import pe.edu.upeu.pharmamobil.domain.platform.AlmacenSeguro
+import pe.edu.upeu.pharmamobil.domain.permiso.GestorPermisos
 import pe.edu.upeu.pharmamobil.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobil.platform.AlmacenSeguroAndroid
 import pe.edu.upeu.pharmamobil.platform.CompartidorAndroid
+import pe.edu.upeu.pharmamobil.platform.permiso.GestorPermisosAndroid
 
 actual val platformModule: Module = module {
     single<HttpClientEngine> { OkHttp.create() }
@@ -23,6 +26,14 @@ actual val platformModule: Module = module {
     single<CreadorDeDriver> { CreadorDeDriverAndroid(androidContext()) }
     single<Compartidor> { CompartidorAndroid(androidContext()) }
     single<AlmacenSeguro> { AlmacenSeguroAndroid(androidContext()) }
+    // La Activity le asigna su puente en onCreate: por eso se registra tambien con su tipo concreto.
+    single {
+        GestorPermisosAndroid(
+            androidContext(),
+            androidContext().getSharedPreferences("permisos", Context.MODE_PRIVATE)
+        )
+    }
+    single<GestorPermisos> { get<GestorPermisosAndroid>() }
 }
 
 // Build.* es null en los tests de JVM, de ahi el orEmpty().

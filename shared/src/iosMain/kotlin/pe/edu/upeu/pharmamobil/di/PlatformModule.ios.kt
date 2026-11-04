@@ -7,9 +7,11 @@ import org.koin.dsl.module
 import pe.edu.upeu.pharmamobil.data.local.CreadorDeDriver
 import pe.edu.upeu.pharmamobil.data.local.CreadorDeDriverIos
 import pe.edu.upeu.pharmamobil.domain.platform.AlmacenSeguro
+import pe.edu.upeu.pharmamobil.domain.permiso.GestorPermisos
 import pe.edu.upeu.pharmamobil.domain.platform.Compartidor
 import pe.edu.upeu.pharmamobil.platform.AlmacenSeguroIos
 import pe.edu.upeu.pharmamobil.platform.CompartidorIos
+import pe.edu.upeu.pharmamobil.platform.GestorPermisosIos
 
 actual val platformModule: Module = module {
     single<HttpClientEngine> { Darwin.create() }
@@ -17,4 +19,5 @@ actual val platformModule: Module = module {
     single<CreadorDeDriver> { CreadorDeDriverIos() }
     single<Compartidor> { CompartidorIos() }
     single<AlmacenSeguro> { AlmacenSeguroIos() }
+    single<GestorPermisos> { GestorPermisosIos() }
 }

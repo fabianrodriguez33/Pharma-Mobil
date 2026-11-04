@@ -19,6 +19,7 @@ import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarClienteUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.RegistrarProductoUseCase
 import pe.edu.upeu.pharmamobil.domain.usecase.SubirImagenProductoUseCase
 import pe.edu.upeu.pharmamobil.presentation.cliente.ClienteViewModel
+import pe.edu.upeu.pharmamobil.presentation.permiso.PermisoNotificacionesViewModel
 import pe.edu.upeu.pharmamobil.presentation.producto.ProductoViewModel
 
 
@@ -42,6 +43,7 @@ val domainModule = module {
 val presentationModule = module {
     viewModel { ProductoViewModel(get(), get(), get(), get(), get(), get()) }
     viewModel { ClienteViewModel(get(), get()) }
+    viewModel { PermisoNotificacionesViewModel(get()) }
 }
 
 

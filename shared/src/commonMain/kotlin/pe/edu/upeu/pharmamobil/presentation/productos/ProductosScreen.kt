@@ -43,6 +43,7 @@ import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 import pe.edu.upeu.pharmamobil.platform.InfoDispositivo
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
+import pe.edu.upeu.pharmamobil.presentation.permiso.TarjetaPermisoNotificaciones
 import pe.edu.upeu.pharmamobil.presentation.sincronizacion.SincronizacionUiState
 import pe.edu.upeu.pharmamobil.presentation.sincronizacion.textoEstadoSincronizacion
 import pe.edu.upeu.pharmamobil.presentation.sincronizacion.textoFallidas
@@ -208,6 +209,7 @@ private fun CatalogoGrid(
                         }
                     }
                 }
+                TarjetaPermisoNotificaciones()
                 AcercaDelDispositivo()
             }
         }
