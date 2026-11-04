@@ -41,10 +41,7 @@ Rama: `feature/integrador-13` (un commit por paso). Pruebas: `./gradlew :shared:
 | `capturas/07_concedido.png` | Permiso **concedido** («Avisos activados») |
 | `capturas/09_catalogo_pendiente_sin_red.png` | Modo avión: «Sin conexión · 1 cambio por enviar» y fila «Pendiente de envío» |
 | `capturas/10_tras_reconectar.png` | Al recuperar la señal y sincronizar: «Todo sincronizado», la fila ya no está pendiente |
-
-## Pendiente
-
-- Evidencia del evento en la consola de Firebase: requiere crear el proyecto con la cuenta de Google propia y copiar `google-services.json` en `androidApp/`.
+| `capturas/12_firebase_debugview.png` | Evento `sincronizacion_completada` registrado en Firebase (Analytics → DebugView) |
 
 ## Notas
 
