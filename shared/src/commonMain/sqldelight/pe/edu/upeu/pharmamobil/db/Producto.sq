@@ -1,10 +1,12 @@
 CREATE TABLE producto (
-    id         INTEGER NOT NULL PRIMARY KEY,
-    nombre     TEXT    NOT NULL,
-    precio     REAL    NOT NULL,
-    stock      INTEGER NOT NULL,
-    imagen     TEXT    NOT NULL DEFAULT '',
-    pendiente  INTEGER NOT NULL DEFAULT 0
+    id           INTEGER NOT NULL PRIMARY KEY,
+    nombre       TEXT    NOT NULL,
+    precio       REAL    NOT NULL,
+    stock        INTEGER NOT NULL,
+    imagen       TEXT    NOT NULL DEFAULT '',
+    pendiente    INTEGER NOT NULL DEFAULT 0,
+    intentos     INTEGER NOT NULL DEFAULT 0,
+    ultimoError  TEXT
 );
 
 listarTodos:
@@ -13,11 +15,41 @@ SELECT * FROM producto ORDER BY nombre ASC;
 listarPendientes:
 SELECT * FROM producto WHERE pendiente = 1;
 
+-- Los ids locales son negativos: el mas antiguo (-1) va primero.
+pendientesPorEnviar:
+SELECT * FROM producto WHERE pendiente = 1 AND intentos < :maxIntentos
+ORDER BY id DESC;
+
+contarPendientes:
+SELECT COUNT(*) FROM producto WHERE pendiente = 1 AND intentos < :maxIntentos;
+
+contarFallidas:
+SELECT COUNT(*) FROM producto WHERE pendiente = 1 AND intentos >= :maxIntentos;
+
+listarFallidas:
+SELECT * FROM producto WHERE pendiente = 1 AND intentos >= :maxIntentos
+ORDER BY id DESC;
+
+sumarIntento:
+UPDATE producto SET intentos = intentos + 1, ultimoError = ? WHERE id = ?;
+
+-- Un fallo permanente agota los intentos de golpe: la fila deja de reintentarse.
+marcarFallida:
+UPDATE producto SET intentos = :maxIntentos, ultimoError = :motivo WHERE id = :id;
+
+reintentarFallidas:
+UPDATE producto SET intentos = 0, ultimoError = NULL
+WHERE pendiente = 1 AND intentos >= :maxIntentos;
+
+confirmarEnvio:
+UPDATE producto SET id = :idServidor, pendiente = 0, intentos = 0, ultimoError = NULL
+WHERE id = :idLocal;
+
 obtenerPorId:
 SELECT * FROM producto WHERE id = ?;
 
 insertar:
-INSERT OR REPLACE INTO producto
+INSERT OR REPLACE INTO producto(id, nombre, precio, stock, imagen, pendiente)
 VALUES (?, ?, ?, ?, ?, ?);
 
 borrarSincronizados:

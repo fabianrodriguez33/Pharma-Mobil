@@ -2,6 +2,7 @@ package pe.edu.upeu.pharmamobil.data.local
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.coroutines.mapToOne
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -9,8 +10,10 @@ import kotlinx.coroutines.flow.map
 import pe.edu.upeu.pharmamobil.db.PharmaDb
 import pe.edu.upeu.pharmamobil.db.Producto as ProductoEntity
 import pe.edu.upeu.pharmamobil.domain.model.Producto
+import pe.edu.upeu.pharmamobil.domain.model.ProductoPendiente
+import pe.edu.upeu.pharmamobil.domain.repository.ProductoLocalRepository
 
-class ProductoLocal(private val base: PharmaDb) {
+class ProductoLocal(private val base: PharmaDb) : ProductoLocalRepository {
     private val consultas = base.productoQueries
 
     fun observar(): Flow<List<Producto>> =
@@ -34,8 +37,46 @@ class ProductoLocal(private val base: PharmaDb) {
     fun obtenerPorId(id: Long): Producto? =
         consultas.obtenerPorId(id).executeAsOneOrNull()?.aDominio()
 
-    fun pendientes(): List<Producto> =
-        consultas.listarPendientes().executeAsList().map { it.aDominio() }
+    override fun pendientes(maxIntentos: Int): List<ProductoPendiente> =
+        consultas.pendientesPorEnviar(maxIntentos.toLong()).executeAsList().map { it.aPendiente() }
+
+    override fun contarPendientes(maxIntentos: Int): Int =
+        consultas.contarPendientes(maxIntentos.toLong()).executeAsOne().toInt()
+
+    fun observarPendientes(maxIntentos: Int): Flow<Int> =
+        consultas.contarPendientes(maxIntentos.toLong())
+            .asFlow()
+            .mapToOne(Dispatchers.Default)
+            .map { it.toInt() }
+
+    fun observarFallidas(maxIntentos: Int): Flow<Int> =
+        consultas.contarFallidas(maxIntentos.toLong())
+            .asFlow()
+            .mapToOne(Dispatchers.Default)
+            .map { it.toInt() }
+
+    /** Filas que agotaron sus intentos, con el motivo del ultimo fallo. */
+    fun fallidas(maxIntentos: Int): List<ProductoPendiente> =
+        consultas.listarFallidas(maxIntentos.toLong()).executeAsList().map { it.aPendiente() }
+
+    /** El usuario decide reintentar: las filas fallidas vuelven a la cola con 0 intentos. */
+    fun reintentarFallidas(maxIntentos: Int) {
+        consultas.reintentarFallidas(maxIntentos.toLong())
+    }
+
+    override fun sumarIntento(id: Long, motivo: String) {
+        consultas.sumarIntento(motivo, id)
+    }
+
+    override fun marcarFallida(id: Long, motivo: String, maxIntentos: Int) {
+        consultas.marcarFallida(maxIntentos.toLong(), motivo, id)
+    }
+
+    override fun confirmar(idLocal: Long, idServidor: Long) {
+        consultas.confirmarEnvio(idServidor, idLocal)
+    }
+
+    override fun conciliar(remotos: List<Producto>) = reemplazarSincronizados(remotos)
 
     /** Guarda con un id local negativo y pendiente = 1 hasta que el servidor lo confirme. */
     fun guardarPendiente(producto: Producto): Producto {
@@ -81,6 +122,8 @@ class ProductoLocal(private val base: PharmaDb) {
             }
         }
     }
+
+    private fun ProductoEntity.aPendiente() = ProductoPendiente(aDominio(), intentos.toInt(), ultimoError)
 
     private fun ProductoEntity.aDominio() = Producto(
         id = id,
