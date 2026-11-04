@@ -28,11 +28,23 @@ Rama: `feature/integrador-13` (un commit por paso). Pruebas: `./gradlew :shared:
 3. Ejecutar la app. Sin el archivo la app compila y corre igual; la telemetría queda inactiva.
 4. El evento `sincronizacion_completada` aparece en Analytics → DebugView (`adb shell setprop debug.firebase.analytics.app pe.edu.upeu.pharmamobil`).
 
-## Capturas pendientes (requieren emulador Android 13+)
+## Evidencia (emulador Pixel 8, Android 17, backend PharmaSoft local)
 
-- Permiso de notificaciones: concedido, denegado y denegado para siempre (tarjeta del Catálogo).
-- Estado de sincronización con filas pendientes (modo avión + crear producto en Inventario).
-- Evento en la consola de Firebase.
+| Captura | Qué muestra |
+|---|---|
+| `capturas/02_catalogo.png` | Estado «Todo sincronizado», antigüedad de los datos y permiso **denegado** («Avisos desactivados») |
+| `capturas/03_explicacion.png` | La app explica antes de pedir el permiso |
+| `capturas/04_dialogo_sistema.png` | Diálogo del sistema |
+| `capturas/05_denegado_una_vez.png` | Tras la primera negativa: sigue **denegado** y se puede volver a pedir |
+| `capturas/06_denegado_para_siempre.png` | Tras la segunda negativa: **denegado para siempre**, se ofrece Ajustes |
+| `capturas/06b_bloqueados.png` | Tarjeta «Avisos bloqueados» con «Abrir ajustes» |
+| `capturas/07_concedido.png` | Permiso **concedido** («Avisos activados») |
+| `capturas/09_catalogo_pendiente_sin_red.png` | Modo avión: «Sin conexión · 1 cambio por enviar» y fila «Pendiente de envío» |
+| `capturas/10_tras_reconectar.png` | Al recuperar la señal y sincronizar: «Todo sincronizado», la fila ya no está pendiente |
+
+## Pendiente
+
+- Evidencia del evento en la consola de Firebase: requiere crear el proyecto con la cuenta de Google propia y copiar `google-services.json` en `androidApp/`.
 
 ## Notas
 
