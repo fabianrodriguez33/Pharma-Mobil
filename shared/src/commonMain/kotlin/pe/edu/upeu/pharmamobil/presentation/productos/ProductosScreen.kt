@@ -43,6 +43,9 @@ import coil3.compose.AsyncImage
 import org.koin.compose.viewmodel.koinViewModel
 import pe.edu.upeu.pharmamobil.platform.InfoDispositivo
 import pe.edu.upeu.pharmamobil.presentation.components.EstadoVacio
+import pe.edu.upeu.pharmamobil.presentation.sincronizacion.SincronizacionUiState
+import pe.edu.upeu.pharmamobil.presentation.sincronizacion.textoEstadoSincronizacion
+import pe.edu.upeu.pharmamobil.presentation.sincronizacion.textoFallidas
 
 @Composable
 fun ProductosScreen(
@@ -50,6 +53,8 @@ fun ProductosScreen(
     viewModel: ProductosViewModel = koinViewModel()
 ) {
     val estado by viewModel.estado.collectAsStateWithLifecycle()
+    val sincronizacion by viewModel.sincronizacion.collectAsStateWithLifecycle()
+    val detalleFallidas by viewModel.detalleFallidas.collectAsStateWithLifecycle()
 
     Box(modifier = modifier.fillMaxSize()) {
         when (val e = estado) {
@@ -60,12 +65,28 @@ fun ProductosScreen(
                 if (e.productos.isEmpty() && e.avisoRed == null) {
                     EstadoVacio(
                         icono = Icons.Default.Inventory2,
-                        titulo = "Sin productos",
-                        descripcion = "La API no devolvió productos.",
-                        modifier = Modifier.align(Alignment.Center)
+                        titulo = "Aún no hay productos",
+                        descripcion = "Cuando sincronices verás aquí el catálogo del servidor. " +
+                            "También puedes registrar productos desde Inventario.",
+                        modifier = Modifier.align(Alignment.Center),
+                        accion = {
+                            FilledTonalButton(
+                                onClick = viewModel::sincronizar,
+                                enabled = !e.sincronizando
+                            ) {
+                                Text(if (e.sincronizando) "Sincronizando…" else "Sincronizar ahora")
+                            }
+                        }
                     )
                 } else {
-                    CatalogoGrid(e, viewModel::sincronizar, viewModel::compartir)
+                    CatalogoGrid(
+                        estado = e,
+                        sincronizacion = sincronizacion,
+                        onSincronizar = viewModel::sincronizar,
+                        onCompartir = viewModel::compartir,
+                        onReintentarFallidas = viewModel::reintentarFallidas,
+                        onRevisarFallidas = viewModel::revisarFallidas
+                    )
                 }
 
             is ProductosUiState.Error ->
@@ -82,13 +103,45 @@ fun ProductosScreen(
                     }
                 )
         }
+        if (detalleFallidas.isNotEmpty()) {
+            AlertDialog(
+                onDismissRequest = viewModel::cerrarRevision,
+                title = { Text("Cambios que no se pudieron enviar") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        detalleFallidas.forEach { fila ->
+                            Column {
+                                Text(fila.producto.nombre, fontWeight = FontWeight.SemiBold)
+                                Text(
+                                    fila.ultimoError ?: "Motivo desconocido",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = viewModel::reintentarFallidas) { Text("Reintentar ahora") }
+                },
+                dismissButton = {
+                    TextButton(onClick = viewModel::cerrarRevision) { Text("Cerrar") }
+                }
+            )
+        }
     }
 }
 
 @Composable
-private fun CatalogoGrid(estado: ProductosUiState.Success, onSincronizar: () -> Unit, onCompartir: (Long) -> Unit) {
+private fun CatalogoGrid(
+    estado: ProductosUiState.Success,
+    sincronizacion: SincronizacionUiState,
+    onSincronizar: () -> Unit,
+    onCompartir: (Long) -> Unit,
+    onReintentarFallidas: () -> Unit,
+    onRevisarFallidas: () -> Unit
+) {
     val productos = estado.productos
-    val avisoRed = estado.avisoRed
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 160.dp),
         modifier = Modifier.fillMaxSize(),
@@ -108,9 +161,16 @@ private fun CatalogoGrid(estado: ProductosUiState.Success, onSincronizar: () -> 
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                if (avisoRed != null) {
+                Text(
+                    text = textoEstadoSincronizacion(sincronizacion),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = if (sincronizacion.sinConexion) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurface
+                )
+                estado.avisoRed?.takeIf { it.startsWith("Sesión") }?.let {
                     Text(
-                        text = avisoRed,
+                        text = it,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -125,8 +185,27 @@ private fun CatalogoGrid(estado: ProductosUiState.Success, onSincronizar: () -> 
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    TextButton(onClick = onSincronizar, enabled = !estado.sincronizando) {
-                        Text(if (estado.sincronizando) "Sincronizando…" else "Sincronizar")
+                    TextButton(onClick = onSincronizar, enabled = !sincronizacion.enCurso) {
+                        Text(if (sincronizacion.enCurso) "Sincronizando…" else "Sincronizar")
+                    }
+                }
+                textoFallidas(sincronizacion.fallidas)?.let { texto ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = texto,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Row {
+                            TextButton(onClick = onRevisarFallidas) { Text("Revisar") }
+                            TextButton(onClick = onReintentarFallidas, enabled = !sincronizacion.enCurso) {
+                                Text("Reintentar ahora")
+                            }
+                        }
                     }
                 }
                 AcercaDelDispositivo()
@@ -163,6 +242,14 @@ private fun ProductoCard(producto: ProductoItemUi, onCompartir: (Long) -> Unit) 
                 minLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
+            if (producto.pendiente) {
+                Text(
+                    text = "Pendiente de envío",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.tertiary
+                )
+            }
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,

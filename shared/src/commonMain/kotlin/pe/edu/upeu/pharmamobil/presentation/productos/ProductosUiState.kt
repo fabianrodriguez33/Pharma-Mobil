@@ -6,7 +6,10 @@ data class ProductoItemUi(
     val nombre: String,
     val imagen: String,
     val precio: String
-)
+) {
+    /** Los ids locales son negativos: la fila aun no llego al servidor. */
+    val pendiente: Boolean get() = id < 0
+}
 
 sealed interface ProductosUiState {
     data object Loading : ProductosUiState
