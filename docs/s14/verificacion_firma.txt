@@ -1,0 +1,4 @@
+Signer #1 certificate DN: CN=Julio Fabian Rodriguez Bazan, OU=EP Ingenieria de Sistemas, O=Universidad Peruana Union, L=Lima, C=PE
+Signer #1 certificate SHA-256 digest: 2e11e5284ea53623960822fe6e50e7e5340cd29329dd2b523e48163bc53f109f
+Signer #1 certificate SHA-1 digest: ef6b9d27176582a3ee88c7bd2436d20bf18013a2
+Signer #1 certificate MD5 digest: bc5863134c95c573155ac1c0cf28fca5
