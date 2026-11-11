@@ -91,6 +91,9 @@ E += [Paragraph("1. Producto A · Guía de instalación y uso", H1),
                    "adb reverse tcp:8080 tcp:8080", COD),
       Paragraph("<b>Opción 2, copiando el archivo.</b> Pasar el .apk al teléfono y abrirlo; Android pide autorizar «instalar apps "
                 "desconocidas» para el explorador o el navegador que lo abre. Aceptar y volver a abrir el archivo.", N),
+      Paragraph("<b>Importante:</b> con cualquiera de las dos opciones la aplicación abre, pero mostrará «Sin conexión con el servidor» "
+                "hasta que se ejecute <i>adb reverse tcp:8080 tcp:8080</i> con el teléfono conectado por adb. Es el único paso que "
+                "hizo tropezar a quien probó esta guía.", N),
       Paragraph("<b>Cómo apuntar la aplicación al servicio desde un dispositivo real.</b> En un teléfono físico la aplicación usa "
                 "localhost:8080; <i>adb reverse</i> lo redirige al puerto 8080 de la PC, así no hace falta conocer la IP de la red ni abrir "
                 "el cortafuegos. (Un emulador usa 10.0.2.2 y no necesita adb reverse.) Sin <i>adb reverse</i> la lista no carga y la "
@@ -136,9 +139,13 @@ E += [Paragraph("1. Producto A · Guía de instalación y uso", H1),
              ["«Conflicto de firma» al instalar", "Hay una versión firmada con otra clave", "adb uninstall pe.edu.upeu.pharmamobil y volver a instalar"]],
             [5.0, 5.0, 7.4]),
       Paragraph("1.8 Registro de la prueba por un tercero", H2),
-      Paragraph("<b>Pendiente.</b> La guía aún no fue seguida por un compañero de otro equipo; está programada para el viernes "
-                "13/11/2026. Se completará la tabla con la persona, la fecha y los pasos que hubo que corregir.", N),
-      tabla([["Probó", "Fecha", "Pasos que se corrigieron"], ["(por completar)", "(por completar)", "(por completar)"]], [5.0, 3.4, 9.0]),
+      Paragraph("La guía fue seguida por un compañero que no forma parte de ningún equipo del proyecto, en su propio teléfono, "
+                "sin ayuda más allá de la guía. Instaló el .apk, conectó la aplicación al servicio y la usó correctamente.", N),
+      tabla([["Probó", "Fecha", "Dispositivo", "Pasos que se corrigieron"],
+             ["Fabian (compañero, sin equipo)", "11/11/2026", "Samsung Galaxy A12, Android 13",
+              "Al abrir la aplicación aparecía «Sin conexión con el servidor»: faltaba la conexión con el servicio. Se resaltó en "
+              "1.4 que el teléfono necesita adb reverse tcp:8080 tcp:8080 antes de abrir la app (ver también 1.7)."]],
+            [3.6, 2.0, 3.8, 8.0]),
       PageBreak()]
 
 # ------------------------------------------------------------ Producto B
@@ -156,18 +163,18 @@ E += [Paragraph("2. Producto B · Checklist de entrega", H1),
              ["Builds", ".aab firmado con la nomenclatura acordada", "OK", R, "Equipo1_ProyectoFinal_Android.aab (8,3 MB)"],
              ["", ".apk de revisión firmado", "OK", R, "apksigner verify (Figura 13)"],
              ["", "La huella declarada coincide con la del archivo", "OK", R, "SHA-256 2e11e528…f109f (sección 4)"],
-             ["Pruebas", "Matriz con tres dispositivos", "Parcial", R, "Un teléfono real y dos emuladores; falta iOS (sección 3)"],
+             ["Pruebas", "Matriz con tres dispositivos", "Parcial", R, "Dos teléfonos reales del mismo modelo y dos emuladores; falta iOS (sección 3)"],
              ["", "Recorrido completo en cada dispositivo", "Parcial", R, "En el teléfono real se cortó tras el paso 3 (D-05)"],
              ["", "Cada defecto con estado", "OK", R, "D-01 a D-05 con estado"],
              ["Documentación", "Informe técnico con la plantilla del Proyecto Final", "Pendiente", "—", "La plantilla se entrega aparte de este documento"],
-             ["", "Guía de instalación probada por un tercero", "Pendiente", "—", "Programada para el 13/11/2026"],
+             ["", "Guía de instalación probada por un tercero", "OK", "Fabian · 11/11/2026", "Instaló y conectó en su teléfono; registro en 1.8"],
              ["", "Limitaciones declaradas", "OK", R, "iOS, dispositivos reales, copia del almacén, huecos 6 a 11"],
              ["Sustentación", "Cada integrante sabe qué módulo defiende", "Pendiente", "—", "Por definir antes del 17/11/2026"],
              ["", "Plan si falla la red en la demostración", "Pendiente", "—", "Propuesta: modo avión con datos locales; backend en la misma PC con adb reverse"]],
             [2.2, 5.3, 1.9, 3.1, 4.9]),
       Spacer(1, 4),
-      Paragraph("<b>Abiertos al cierre:</b> segundo y tercer teléfono real, copia del almacén de claves fuera del equipo, prueba de "
-                "la guía por un tercero, etiqueta del servicio y plan de sustentación.", N),
+      Paragraph("<b>Abiertos al cierre:</b> un teléfono real de otro modelo o versión, recorrido completo en el teléfono real, copia "
+                "del almacén de claves fuera del equipo, etiqueta del servicio y plan de sustentación.", N),
       PageBreak()]
 
 # ------------------------------------------------------------ Producto C
@@ -181,14 +188,16 @@ E += [Paragraph("3. Producto C · Matriz de pruebas completa", H1),
              ["A · Samsung Galaxy A12 (SM-A127M), Android 13, <b>real</b>", "Android", "1, 2 y 3. Los pasos 4 a 8 no se ejecutaron: la conexión inalámbrica se perdió", "Correcto con observaciones (D-01, D-05)", R],
              ["B · Pixel 8, Android 17 (API 37.1), emulador", "Android", "1 a 8", "Correcto con observaciones (D-01, D-02, D-03)", R],
              ["C · Android SDK built for x86, Android 7.0 (API 24), emulador de gama baja", "Android", "1, 2, 3 (crear), 5, 6 y 8. El 4 no se ejecutó; el 7 no aplica (sin POST_NOTIFICATIONS en API 24)", "Correcto", R],
-             ["D · iPhone / simulador de iOS", "iOS", "Ninguno", "No ejecutado: limitación declarada", "—"]],
+             ["E · Samsung Galaxy A12, Android 13, <b>real</b> (de Fabian, compañero sin equipo)", "Android", "Instalación desde el .apk, conexión al servicio y uso de la aplicación (sin recorrido de los ocho pasos)", "Correcto tras conectar el servicio (adb reverse)", "Fabian · 11/11/2026"],
+             ["F · iPhone / simulador de iOS", "iOS", "Ninguno", "No ejecutado: limitación declarada", "—"]],
             [4.6, 1.8, 5.2, 3.3, 2.5]),
       Spacer(1, 4),
       Paragraph("<b>Limitación de iOS.</b> Qué se intentó: compilar el código iOS en el equipo disponible. Con qué cuenta: ninguna; no "
                 "hay un Mac ni una cuenta de Apple configurada. Qué lo impidió: Xcode y el enlazado del framework solo existen en macOS. "
                 "Evidencia alternativa: <i>compileKotlinIosSimulatorArm64</i> con BUILD SUCCESSFUL (el código común, GestorPermisosIos y "
                 "las dependencias de Firebase compilan a klib). No hay archivo de Xcode, organizador ni simulador recorrido. "
-                "<b>Tampoco se cumple</b> el mínimo de tres dispositivos reales: hay uno real y dos emuladores.", N),
+                "<b>Tampoco se cumple</b> el mínimo de tres dispositivos reales distintos: hay dos teléfonos reales, ambos Samsung Galaxy A12 con "
+                "Android 13 (mismo modelo y versión, por lo que cuentan como un solo tipo de dispositivo), y dos emuladores.", N),
       Paragraph("3.2 Defectos", H2),
       tabla([["ID", "Disp.", "Pasos para reproducir", "Esperado", "Obtenido", "Severidad", "Estado"],
              ["D-01", "A, B", "1. Entrar como admin. 2. Inventario: nombre «AB», precio 2, stock 10. 3. Registrar. 4. Catálogo, Revisar", "El error del servicio llega al campo nombre", "El formulario dice «registrado correctamente»; el motivo solo aparece en Catálogo, Revisar", "Media", "Pendiente (limitación)"],
@@ -231,7 +240,7 @@ E += [Paragraph("4. Producto D · Ficha de versión y firma", H1),
       tabla([["N.º", "Criterio", "Cumple"],
              ["1", "La guía indica las versiones con las que se probó", "Sí"],
              ["2", "La guía explica cómo apuntar la app al servicio desde un dispositivo real", "Sí"],
-             ["3", "La guía fue seguida por un compañero de otro equipo y el registro está incluido", "No (pendiente)"],
+             ["3", "La guía fue seguida por un compañero de otro equipo y el registro está incluido", "Sí (Fabian, sin equipo; 1.8)"],
              ["4", "El checklist cubre repositorios, secretos, builds, pruebas, documentación y sustentación", "Sí"],
              ["5", "Cada punto tiene responsable y fecha de verificación", "Sí (los pendientes, sin responsable)"],
              ["6", "La matriz registra tres dispositivos reales, con iOS o su limitación documentada", "Parcial (uno real; iOS documentado)"],
