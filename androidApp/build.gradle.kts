@@ -1,4 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
+
+// Credenciales de firma: archivo ignorado por Git. Sin el archivo, la compilacion de
+// depuracion funciona igual y solo la de entrega exige las credenciales.
+val firma = Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) load(f.inputStream())
+}
+val hayFirma = firma.getProperty("storeFile") != null
 
 plugins {
     alias(libs.plugins.androidApplication)
@@ -37,7 +46,17 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.0.0"
+    }
+    signingConfigs {
+        if (hayFirma) {
+            create("release") {
+                storeFile = file(firma.getProperty("storeFile"))
+                storePassword = firma.getProperty("storePassword")
+                keyAlias = firma.getProperty("keyAlias")
+                keyPassword = firma.getProperty("keyPassword")
+            }
+        }
     }
     packaging {
         resources {
@@ -46,7 +65,8 @@ android {
     }
     buildTypes {
         release {
-            isMinifyEnabled = false
+            if (hayFirma) signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

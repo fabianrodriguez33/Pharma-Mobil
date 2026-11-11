@@ -263,3 +263,23 @@ La base SQLite local (`pharma.db`, gestionada con SQLDelight) es la única fuent
 ```bash
 ./gradlew testAndroidHostTest assembleDebug
 ```
+
+
+## Firma y build de entrega (sesión 14)
+
+- Almacén de claves del equipo: `pharmamobil.jks`, creado **fuera** del repositorio (`keytool -genkeypair ... -alias pharmamobil`).
+- Las credenciales se leen de `keystore.properties` en la raíz (ignorado por Git, igual que `*.jks` y `*.keystore`):
+
+```properties
+storeFile=<ruta>/pharmamobil.jks
+storePassword=********
+keyAlias=pharmamobil
+keyPassword=********
+```
+
+- Sin ese archivo el proyecto abre y compila en depuración; solo la versión de entrega exige las credenciales.
+- Paquete firmado: `./gradlew :androidApp:bundleRelease` (`.aab`). Instalable de revisión: `./gradlew :androidApp:assembleRelease` (`.apk`).
+- Verificación: `apksigner verify --print-certs <apk>`.
+- Versión de entrega: versionCode 1 · versionName 1.0.0 · applicationId `pe.edu.upeu.pharmamobil` · etiqueta `v1.0-final`.
+- Reglas R8 en `androidApp/proguard-rules.pro` (serialización y Koin).
+- Evidencia y límites: `docs/s14/`.

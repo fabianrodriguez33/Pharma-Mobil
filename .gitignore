@@ -18,6 +18,11 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 
+# Firma de entrega: nunca se versiona
+keystore.properties
+*.jks
+*.keystore
+
 # Configuracion de Firebase: una por integrante, nunca se versiona
 google-services.json
 GoogleService-Info.plist
